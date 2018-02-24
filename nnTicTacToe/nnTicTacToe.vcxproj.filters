@@ -14,6 +14,12 @@
     <Filter Include="Project">
       <UniqueIdentifier>{5ba63ffb-acef-472e-9cc0-22ecf88f2658}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game">
+      <UniqueIdentifier>{c563f9f5-ac9c-468a-ad06-a0dbfbf5e4cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="General">
+      <UniqueIdentifier>{0198412d-35f1-437b-b1da-ba1642aedd1d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\nnTicTacToe.cpp">
@@ -34,6 +40,9 @@
     <ClCompile Include="source\FileIO\FileManager.cpp">
       <Filter>FileIO</Filter>
     </ClCompile>
+    <ClCompile Include="source\Game\GameLogic.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\stdafx.h">
@@ -53,6 +62,12 @@
     </ClInclude>
     <ClInclude Include="source\FileIO\FileManager.h">
       <Filter>FileIO</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Game\GameLogic.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="source\General\Globals.h">
+      <Filter>General</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

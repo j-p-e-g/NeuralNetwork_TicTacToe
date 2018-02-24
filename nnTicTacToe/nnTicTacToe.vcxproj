@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\FileIO\FileManager.cpp" />
+    <ClCompile Include="source\Game\GameLogic.cpp" />
     <ClCompile Include="source\NeuralNetwork\Node.cpp" />
     <ClCompile Include="source\NeuralNetwork\NodeNetwork.cpp" />
     <ClCompile Include="source\NeuralNetwork\ParameterManager.cpp" />
@@ -28,6 +29,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\FileIO\FileManager.h" />
+    <ClInclude Include="source\Game\GameLogic.h" />
+    <ClInclude Include="source\General\Globals.h" />
     <ClInclude Include="source\NeuralNetwork\Node.h" />
     <ClInclude Include="source\NeuralNetwork\NodeNetwork.h" />
     <ClInclude Include="source\NeuralNetwork\ParameterManager.h" />

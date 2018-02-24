@@ -2,10 +2,9 @@
 #include "CppUnitTest.h"
 #include "NeuralNetwork/NodeNetwork.h"
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
 namespace NodeNetworkTest
 {
+    using namespace Microsoft::VisualStudio::CppUnitTestFramework;
     using namespace NeuralNetwork;
 
     TEST_CLASS(NodeNetwork_Test)
@@ -22,26 +21,46 @@ namespace NodeNetworkTest
 
         TEST_METHOD(NodeNetwork_createNetwork_tooFewInputNodes)
         {
+            NetworkSizeData sizeData;
+            sizeData.numInputNodes = 0;
+            sizeData.numOutputNodes = 3;
+            sizeData.numHiddenNodes = std::vector<int>();
+
             NodeNetwork nnet;
-            Assert::AreEqual(false, nnet.createNetwork(0, 3, std::vector<int>()));
+            Assert::AreEqual(false, nnet.createNetwork(sizeData));
         }
 
         TEST_METHOD(NodeNetwork_createNetwork_tooFewOutputNodes)
         {
+            NetworkSizeData sizeData;
+            sizeData.numInputNodes = 7;
+            sizeData.numOutputNodes = 0;
+            sizeData.numHiddenNodes = std::vector<int>();
+
             NodeNetwork nnet;
-            Assert::AreEqual(false, nnet.createNetwork(7, 0, std::vector<int>()));
+            Assert::AreEqual(false, nnet.createNetwork(sizeData));
         }
 
         TEST_METHOD(NodeNetwork_createNetwork_invalidHiddenLayer)
         {
+            NetworkSizeData sizeData;
+            sizeData.numInputNodes = 3;
+            sizeData.numOutputNodes = 2;
+            sizeData.numHiddenNodes = std::vector<int>({ 2, -1, 1 });
+
             NodeNetwork nnet;
-            Assert::AreEqual(false, nnet.createNetwork(3, 2, std::vector<int>({ 2, -1, 1 })));
+            Assert::AreEqual(false, nnet.createNetwork(sizeData));
         }
 
         TEST_METHOD(NodeNetwork_createNetwork_valid)
         {
+            NetworkSizeData sizeData;
+            sizeData.numInputNodes = 2;
+            sizeData.numOutputNodes = 1;
+            sizeData.numHiddenNodes = std::vector<int>({ 2, 2 });
+
             NodeNetwork nnet;
-            Assert::AreEqual(true, nnet.createNetwork(2, 1, std::vector<int>({2, 2})));
+            Assert::AreEqual(true, nnet.createNetwork(sizeData));
 
             // 5 nodes with bias value + 10 edges with weight value
             Assert::AreEqual(15, nnet.getNumParameters());
@@ -55,8 +74,13 @@ namespace NodeNetworkTest
 
         TEST_METHOD(NodeNetwork_assignInputValues_tooFew)
         {
+            NetworkSizeData sizeData;
+            sizeData.numInputNodes = 3;
+            sizeData.numOutputNodes = 1;
+            sizeData.numHiddenNodes = std::vector<int>({ 2, 3 });
+
             NodeNetwork nnet;
-            Assert::AreEqual(true, nnet.createNetwork(3, 1, std::vector<int>({ 2, 3 })));
+            Assert::AreEqual(true, nnet.createNetwork(sizeData));
 
             // too few values
             Assert::AreEqual(false, nnet.assignInputValues({-1.0, 2.1}));
@@ -64,8 +88,13 @@ namespace NodeNetworkTest
 
         TEST_METHOD(NodeNetwork_assignInputValues_tooMany)
         {
+            NetworkSizeData sizeData;
+            sizeData.numInputNodes = 2;
+            sizeData.numOutputNodes = 2;
+            sizeData.numHiddenNodes = std::vector<int>({ 4 });
+
             NodeNetwork nnet;
-            Assert::AreEqual(true, nnet.createNetwork(2, 2, std::vector<int>({ 4 })));
+            Assert::AreEqual(true, nnet.createNetwork(sizeData));
 
             // too many values
             Assert::AreEqual(false, nnet.assignInputValues({ 0.74, 0.2, -0.3, 1.7 }));
@@ -73,16 +102,25 @@ namespace NodeNetworkTest
 
         TEST_METHOD(NodeNetwork_assignInputValues)
         {
-            NodeNetwork nnet;
-            Assert::AreEqual(true, nnet.createNetwork(3, 2, std::vector<int>({})));
+            NetworkSizeData sizeData;
+            sizeData.numInputNodes = 3;
+            sizeData.numOutputNodes = 2;
+            sizeData.numHiddenNodes = std::vector<int>();
 
+            NodeNetwork nnet;
+            Assert::AreEqual(true, nnet.createNetwork(sizeData));
             Assert::AreEqual(true, nnet.assignInputValues({ 5.2, -1.34, 0.25 }));
         }
 
         TEST_METHOD(NodeNetwork_assignParameters_tooFewParameters)
         {
+            NetworkSizeData sizeData;
+            sizeData.numInputNodes = 2;
+            sizeData.numOutputNodes = 1;
+            sizeData.numHiddenNodes = std::vector<int>({ 2 });
+
             NodeNetwork nnet;
-            Assert::AreEqual(true, nnet.createNetwork(2, 1, std::vector<int>({ 2 })));
+            Assert::AreEqual(true, nnet.createNetwork(sizeData));
 
             // 3 nodes with bias value + 6 edges with weight value
             Assert::AreEqual(9, nnet.getNumParameters());
@@ -94,8 +132,13 @@ namespace NodeNetworkTest
 
         TEST_METHOD(NodeNetwork_assignParameters_tooManyParameters)
         {
+            NetworkSizeData sizeData;
+            sizeData.numInputNodes = 2;
+            sizeData.numOutputNodes = 2;
+            sizeData.numHiddenNodes = std::vector<int>();
+
             NodeNetwork nnet;
-            Assert::AreEqual(true, nnet.createNetwork(2, 2, std::vector<int>()));
+            Assert::AreEqual(true, nnet.createNetwork(sizeData));
 
             // 2 nodes with bias value + 4 edges with weights
             Assert::AreEqual(6, nnet.getNumParameters());
@@ -107,8 +150,13 @@ namespace NodeNetworkTest
 
         TEST_METHOD(NodeNetwork_assignParameters)
         {
+            NetworkSizeData sizeData;
+            sizeData.numInputNodes = 2;
+            sizeData.numOutputNodes = 2;
+            sizeData.numHiddenNodes = std::vector<int>();
+
             NodeNetwork nnet;
-            Assert::AreEqual(true, nnet.createNetwork(2, 2, std::vector<int>()));
+            Assert::AreEqual(true, nnet.createNetwork(sizeData));
 
             // 2 nodes with bias value + 4 edges with weights
             Assert::AreEqual(6, nnet.getNumParameters());
@@ -120,22 +168,33 @@ namespace NodeNetworkTest
 
         TEST_METHOD(NodeNetwork_compute_noParams_noInputValues)
         {
+            NetworkSizeData sizeData;
+            sizeData.numInputNodes = 2;
+            sizeData.numOutputNodes = 2;
+            sizeData.numHiddenNodes = std::vector<int>({ 2 });
+
             NodeNetwork nnet;
-            Assert::AreEqual(true, nnet.createNetwork(2, 2, std::vector<int>({ 2 })));
+            Assert::AreEqual(true, nnet.createNetwork(sizeData));
 
             std::vector<double> outputValues;
             nnet.computeValues();
-            nnet.getOutputValues(outputValues);
+            const int bestIndex = nnet.getOutputValues(outputValues);
 
             Assert::AreEqual(2, static_cast<int>(outputValues.size()));
             Assert::AreEqual(0.0, outputValues[0]);
             Assert::AreEqual(0.0, outputValues[1]);
+            Assert::AreEqual(0, bestIndex);
         }
 
         TEST_METHOD(NodeNetwork_compute)
         {
+            NetworkSizeData sizeData;
+            sizeData.numInputNodes = 3;
+            sizeData.numOutputNodes = 1;
+            sizeData.numHiddenNodes = std::vector<int>();
+
             std::shared_ptr<NodeNetwork> network = std::make_shared<NodeNetwork>();
-            network->createNetwork(3, 1, std::vector<int>());
+            network->createNetwork(sizeData);
             network->assignInputValues(std::vector<double>({ 1, -0.5, -1 }));
 
             std::queue<double> params = std::queue<double>({ 0.2, 0.7, -0.3, 1.2 });
@@ -143,10 +202,11 @@ namespace NodeNetworkTest
             network->computeValues();
 
             std::vector<double> outputValues;
-            network->getOutputValues(outputValues);
+            const int bestIndex = network->getOutputValues(outputValues);
 
             Assert::AreEqual(1, static_cast<int>(outputValues.size()));
             Assert::AreEqual(1.35, outputValues[0], 0.00001);
+            Assert::AreEqual(0, bestIndex);
         }
     };
 }

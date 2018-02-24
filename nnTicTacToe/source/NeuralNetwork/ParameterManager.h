@@ -3,6 +3,8 @@
 #include <map>
 #include <vector>
 
+#include "General/Globals.h"
+
 namespace NeuralNetwork
 {
     struct ParamSet
@@ -15,7 +17,7 @@ namespace NeuralNetwork
     {
     public:
         ParameterManager() = delete;
-        ParameterManager(int num, double minValue, double maxValue);
+        ParameterManager(const ParameterManagerData& pmData);
 
     public:
         bool readDataFromFile();
@@ -24,11 +26,8 @@ namespace NeuralNetwork
         void addNewParamSet(const ParamSet& pset);
 
     private:
+        const ParameterManagerData& paramData;
         std::map<int, ParamSet> m_paramSets;
         int m_highestId;
-
-        int m_paramAmount;
-        double m_minValue;
-        double m_maxValue;
     };
 }

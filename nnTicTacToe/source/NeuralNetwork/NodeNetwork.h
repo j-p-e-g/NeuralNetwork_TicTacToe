@@ -4,6 +4,7 @@
 #include <memory>
 #include <queue>
 
+#include "General/Globals.h"
 #include "Node.h"
 
 namespace NeuralNetwork
@@ -15,7 +16,7 @@ namespace NeuralNetwork
     class NodeNetworkInterface
     {
     public:
-        virtual bool createNetwork(int numInputNodes, int numOutputNodes, std::vector<int> numHiddenNodes) = 0;
+        virtual bool createNetwork(const NetworkSizeData& sizeData) = 0;
         virtual void destroyNetwork() = 0;
 
         virtual bool assignInputValues(const std::vector<double>& inputValues) = 0;
@@ -24,7 +25,7 @@ namespace NeuralNetwork
         virtual bool assignParameters(std::queue<double> params) = 0;
 
         virtual bool computeValues() = 0;
-        virtual void getOutputValues(std::vector<double>& outputValues) const = 0;
+        virtual int getOutputValues(std::vector<double>& outputValues) const = 0;
     };
 
     class NodeNetwork
@@ -35,13 +36,13 @@ namespace NeuralNetwork
         ~NodeNetwork();
 
     public:
-        bool createNetwork(int numInputNodes, int numOutputNodes, std::vector<int> numHiddenNodes) override;
+        bool createNetwork(const NetworkSizeData& sizeData) override;
         void destroyNetwork() override;
 
         bool assignInputValues(const std::vector<double>& inputValues) override;
         bool assignParameters(std::queue<double> params) override;
         bool computeValues() override;
-        void getOutputValues(std::vector<double>& outputValues) const override;
+        int getOutputValues(std::vector<double>& outputValues) const override;
 
     public:
 

@@ -15,10 +15,8 @@ namespace NeuralNetwork
 
     const std::string DATA_FILE_NAME = "data/values.json";
 
-    ParameterManager::ParameterManager(int num, double minValue, double maxValue)
-        : m_paramAmount(num)
-        , m_minValue(minValue)
-        , m_maxValue(maxValue)
+    ParameterManager::ParameterManager(const ParameterManagerData& pmData)
+        : paramData(pmData)
         , m_highestId(0)
     {
     }
@@ -72,13 +70,13 @@ namespace NeuralNetwork
     void ParameterManager::fillWithRandomValues(ParamSet& pset) const
     {
         pset.params.clear();
-        pset.params.reserve(m_paramAmount);
+        pset.params.reserve(paramData.numParams);
 
         std::random_device rd;
         std::mt19937 gen(rd());
-        std::uniform_real_distribution<double> rndDist(m_minValue, std::nextafter(m_maxValue, DBL_MAX));
+        std::uniform_real_distribution<double> rndDist(paramData.minValue, std::nextafter(paramData.maxValue, DBL_MAX));
 
-        for (int k = 0; k < m_paramAmount; k++)
+        for (int k = 0; k < paramData.numParams; k++)
         {
             pset.params.push_back(rndDist(gen));
         }

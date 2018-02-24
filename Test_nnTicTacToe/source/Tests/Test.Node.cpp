@@ -2,10 +2,9 @@
 #include "CppUnitTest.h"
 #include "NeuralNetwork/Node.h"
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
 namespace NodeTest
 {
+    using namespace Microsoft::VisualStudio::CppUnitTestFramework;
     using namespace NeuralNetwork;
 
     TEST_CLASS(NodeEdge_Test)

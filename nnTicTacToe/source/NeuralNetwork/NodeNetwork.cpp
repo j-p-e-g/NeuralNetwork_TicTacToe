@@ -25,18 +25,19 @@ namespace NeuralNetwork
         m_layers.clear();
     }
 
-    bool NodeNetwork::createNetwork(int numInputNodes, int numOutputNodes, std::vector<int> numHiddenNodes)
+    bool NodeNetwork::createNetwork(const NetworkSizeData& sizeData)
     {
-        if (numInputNodes <= 0 || numOutputNodes <= 0)
+        if (sizeData.numInputNodes <= 0 || sizeData.numOutputNodes <= 0)
         {
-            std::cerr << "Network needs at least one input and one output node (passed " << numInputNodes << " input node(s) and " << numOutputNodes << " output node(s))" << std::endl;
+            std::cerr << "Network needs at least one input and one output node (passed " << sizeData.numInputNodes
+                << " input node(s) and " << sizeData.numOutputNodes << " output node(s))" << std::endl;
             return false;
         }
 
         destroyNetwork();
 
         Layer prevLayer; // initially empty
-        for (int k = 0; k < numInputNodes; k++)
+        for (int k = 0; k < sizeData.numInputNodes; k++)
         {
             std::shared_ptr<Node> node = std::make_shared<Node>();
             prevLayer.push_back(node);
@@ -44,7 +45,7 @@ namespace NeuralNetwork
 
         m_layers.push_back(prevLayer);
 
-        for (auto nh : numHiddenNodes)
+        for (auto nh : sizeData.numHiddenNodes)
         {
             if (nh <= 0)
             {
@@ -55,7 +56,7 @@ namespace NeuralNetwork
             prevLayer = addInnerLayer(nh, prevLayer);
         }
 
-        addInnerLayer(numOutputNodes, prevLayer);
+        addInnerLayer(sizeData.numOutputNodes, prevLayer);
 
         return true;
     }
@@ -111,7 +112,7 @@ namespace NeuralNetwork
             return false;
         }
 
-        for (unsigned int k = 0; k < inputLayer.size(); k++)
+        for (int k = 0; k < inputLayer.size(); k++)
         {
             inputLayer[k]->setValue(inputValues[k]);
         }
@@ -156,16 +157,26 @@ namespace NeuralNetwork
         return true;
     }
 
-    void NodeNetwork::getOutputValues(std::vector<double>& outputValues) const
+    int NodeNetwork::getOutputValues(std::vector<double>& outputValues) const
     {
         assert(m_layers.size() >= 2);
 
         outputValues.clear();
 
+        int bestIndex = 0;
         const Layer& outputLayer = m_layers[m_layers.size() - 1];
-        for (const auto& node : outputLayer)
+
+        for (int k = 0; k < outputLayer.size(); k++)
         {
-            outputValues.push_back(node->getValue());
+            const double value = outputLayer[k]->getValue();
+            if (value > outputLayer[bestIndex]->getValue())
+            {
+                bestIndex = k;
+            }
+
+            outputValues.push_back(value);
         }
+
+        return bestIndex;
     }
 }
