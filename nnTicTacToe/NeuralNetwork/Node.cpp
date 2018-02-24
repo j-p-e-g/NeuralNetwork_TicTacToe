@@ -9,13 +9,30 @@ namespace NeuralNetwork
     // --------------------------
     Edge::Edge(const std::shared_ptr<Node>& pred)
         : m_predecessor(pred)
-        , m_edgeWeight(0.f)
+        , m_edgeWeight(1.f)
     {
     }
 
     Edge::~Edge()
     {
         m_predecessor = nullptr;
+    }
+
+    bool Edge::assignParameters(std::queue<double>& params)
+    {
+        if (static_cast<int>(params.size()) < getNumParameters())
+        {
+            return false;
+        }
+
+        setEdgeWeight(params.front());
+        params.pop();
+        return true;
+    }
+
+    int Edge::getNumParameters() const
+    {
+        return 1;
     }
 
     double Edge::getValue() const
@@ -31,7 +48,7 @@ namespace NeuralNetwork
     {
     }
 
-    bool Node::assignParameters(std::queue<double>& values)
+    bool Node::assignParameters(std::queue<double>& params)
     {
         // nothing to do
         return true;
@@ -61,21 +78,20 @@ namespace NeuralNetwork
         m_inputEdges.clear();
     }
 
-    bool InnerNode::assignParameters(std::queue<double>& values)
+    bool InnerNode::assignParameters(std::queue<double>& params)
     {
-        if (static_cast<int>(values.size()) < getNumParameters())
+        if (static_cast<int>(params.size()) < getNumParameters())
         {
             return false;
         }
 
         for (auto& edge : m_inputEdges)
         {
-            edge->setEdgeWeight(values.front());
-            values.pop();
+            edge->assignParameters(params);
         }
 
-        m_bias = values.front();
-        values.pop();
+        m_bias = params.front();
+        params.pop();
 
         return true;
     }

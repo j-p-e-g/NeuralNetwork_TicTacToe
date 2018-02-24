@@ -35,7 +35,6 @@ namespace NeuralNetwork
         ~NodeNetwork();
 
     public:
-    public:
         bool createNetwork(int numInputNodes, int numOutputNodes, std::vector<int> numHiddenNodes) override;
         void destroyNetwork() override;
 

@@ -18,6 +18,9 @@ namespace NeuralNetwork
         void setEdgeWeight(double val) { m_edgeWeight = val; }
         double getEdgeWeight() const { return m_edgeWeight; }
 
+        virtual bool assignParameters(std::queue<double>& values);
+        virtual int getNumParameters() const;
+
         double getValue() const;
 
     private:
@@ -49,7 +52,7 @@ namespace NeuralNetwork
         : public Node
     {
     public:
-        InnerNode() {};
+        InnerNode() = delete;
         InnerNode(const std::vector<std::shared_ptr<Edge>>& inputEdges);
         ~InnerNode();
 
