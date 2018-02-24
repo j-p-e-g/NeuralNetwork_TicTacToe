@@ -1,0 +1,5 @@
+JSON for Modern C++
+
+Copyright © 2013-2018 Niels Lohmann
+https://github.com/nlohmann/json
+License: MIT License

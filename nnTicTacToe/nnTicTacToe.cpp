@@ -3,10 +3,11 @@
 #include <iostream>
 
 #include "NeuralNetwork/NodeNetwork.h"
+#include "NeuralNetwork/ParameterManager.h"
 
 using namespace NeuralNetwork;
 
-int main()
+void buildAndDestroyNetwork()
 {
     std::shared_ptr<NodeNetwork> network = std::make_shared<NodeNetwork>();
     if (!network->createNetwork(3, 1, std::vector<int>()))
@@ -36,6 +37,22 @@ int main()
     }
 
     network->destroyNetwork();
-    return 0;
 }
 
+void setupParameterManager()
+{
+    ParameterManager pm(5, -10.0, 10.0);
+    pm.readDataFromFile();
+    pm.dumpDataToFile();
+
+    ParamSet pset;
+    pm.fillWithRandomValues(pset);
+    pm.addNewParamSet(pset);
+}
+
+int main()
+{
+    //buildAndDestroyNetwork();
+    setupParameterManager();
+    return 0;
+}

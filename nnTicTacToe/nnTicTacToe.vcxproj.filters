@@ -12,6 +12,9 @@
     <Filter Include="NeuralNetwork">
       <UniqueIdentifier>{e3dbf03a-0073-4fe8-9a39-4473ea59820c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="FileIO">
+      <UniqueIdentifier>{089164b0-4af6-4f39-b0ae-f701f609c0e1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -26,6 +29,12 @@
     <ClInclude Include="NeuralNetwork\NodeNetwork.h">
       <Filter>NeuralNetwork</Filter>
     </ClInclude>
+    <ClInclude Include="NeuralNetwork\ParameterManager.h">
+      <Filter>NeuralNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="FileIO\FileManager.h">
+      <Filter>FileIO</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -39,6 +48,12 @@
     </ClCompile>
     <ClCompile Include="NeuralNetwork\NodeNetwork.cpp">
       <Filter>NeuralNetwork</Filter>
+    </ClCompile>
+    <ClCompile Include="NeuralNetwork\ParameterManager.cpp">
+      <Filter>NeuralNetwork</Filter>
+    </ClCompile>
+    <ClCompile Include="FileIO\FileManager.cpp">
+      <Filter>FileIO</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
