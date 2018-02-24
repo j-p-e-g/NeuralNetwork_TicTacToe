@@ -1,9 +1,9 @@
-#include "../stdafx.h"
+#include "stdafx.h"
 
 #include "ParameterManager.h"
-#include "../FileIO/FileManager.h"
+#include "FileIO/FileManager.h"
 
-#include "../3rdparty/json/json.hpp"
+#include "3rdparty/json/json.hpp"
 
 #include <iostream>
 #include <random>

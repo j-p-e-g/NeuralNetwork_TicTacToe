@@ -5,55 +5,54 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Project">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
     <Filter Include="NeuralNetwork">
       <UniqueIdentifier>{e3dbf03a-0073-4fe8-9a39-4473ea59820c}</UniqueIdentifier>
     </Filter>
     <Filter Include="FileIO">
       <UniqueIdentifier>{089164b0-4af6-4f39-b0ae-f701f609c0e1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Project">
+      <UniqueIdentifier>{5ba63ffb-acef-472e-9cc0-22ecf88f2658}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h">
+    <ClCompile Include="source\nnTicTacToe.cpp">
       <Filter>Project</Filter>
-    </ClInclude>
-    <ClInclude Include="targetver.h">
+    </ClCompile>
+    <ClCompile Include="source\stdafx.cpp">
       <Filter>Project</Filter>
-    </ClInclude>
-    <ClInclude Include="NeuralNetwork\Node.h">
+    </ClCompile>
+    <ClCompile Include="source\NeuralNetwork\Node.cpp">
       <Filter>NeuralNetwork</Filter>
-    </ClInclude>
-    <ClInclude Include="NeuralNetwork\NodeNetwork.h">
+    </ClCompile>
+    <ClCompile Include="source\NeuralNetwork\NodeNetwork.cpp">
       <Filter>NeuralNetwork</Filter>
-    </ClInclude>
-    <ClInclude Include="NeuralNetwork\ParameterManager.h">
+    </ClCompile>
+    <ClCompile Include="source\NeuralNetwork\ParameterManager.cpp">
       <Filter>NeuralNetwork</Filter>
-    </ClInclude>
-    <ClInclude Include="FileIO\FileManager.h">
+    </ClCompile>
+    <ClCompile Include="source\FileIO\FileManager.cpp">
       <Filter>FileIO</Filter>
-    </ClInclude>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
+    <ClInclude Include="source\stdafx.h">
       <Filter>Project</Filter>
-    </ClCompile>
-    <ClCompile Include="nnTicTacToe.cpp">
+    </ClInclude>
+    <ClInclude Include="source\targetver.h">
       <Filter>Project</Filter>
-    </ClCompile>
-    <ClCompile Include="NeuralNetwork\Node.cpp">
+    </ClInclude>
+    <ClInclude Include="source\NeuralNetwork\Node.h">
       <Filter>NeuralNetwork</Filter>
-    </ClCompile>
-    <ClCompile Include="NeuralNetwork\NodeNetwork.cpp">
+    </ClInclude>
+    <ClInclude Include="source\NeuralNetwork\NodeNetwork.h">
       <Filter>NeuralNetwork</Filter>
-    </ClCompile>
-    <ClCompile Include="NeuralNetwork\ParameterManager.cpp">
+    </ClInclude>
+    <ClInclude Include="source\NeuralNetwork\ParameterManager.h">
       <Filter>NeuralNetwork</Filter>
-    </ClCompile>
-    <ClCompile Include="FileIO\FileManager.cpp">
+    </ClInclude>
+    <ClInclude Include="source\FileIO\FileManager.h">
       <Filter>FileIO</Filter>
-    </ClCompile>
+    </ClInclude>
   </ItemGroup>
 </Project>

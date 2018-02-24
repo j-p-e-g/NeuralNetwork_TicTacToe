@@ -21,34 +21,34 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\nnTicTacToe\NeuralNetwork\NodeNetwork.h">
+    <ClCompile Include="..\nnTicTacToe\source\NeuralNetwork\Node.cpp">
       <Filter>Resource Files\NodeNetwork</Filter>
-    </ClInclude>
-    <ClInclude Include="..\nnTicTacToe\NeuralNetwork\Node.h">
+    </ClCompile>
+    <ClCompile Include="..\nnTicTacToe\source\NeuralNetwork\NodeNetwork.cpp">
       <Filter>Resource Files\NodeNetwork</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
+    </ClCompile>
+    <ClCompile Include="source\Tests\Test.Node.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Tests\Test.NodeNetwork.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="source\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\nnTicTacToe\NeuralNetwork\NodeNetwork.cpp">
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\nnTicTacToe\source\NeuralNetwork\Node.h">
       <Filter>Resource Files\NodeNetwork</Filter>
-    </ClCompile>
-    <ClCompile Include="..\nnTicTacToe\NeuralNetwork\Node.cpp">
+    </ClInclude>
+    <ClInclude Include="..\nnTicTacToe\source\NeuralNetwork\NodeNetwork.h">
       <Filter>Resource Files\NodeNetwork</Filter>
-    </ClCompile>
-    <ClCompile Include="Tests\Test.Node.cpp">
-      <Filter>Tests</Filter>
-    </ClCompile>
-    <ClCompile Include="Tests\Test.NodeNetwork.cpp">
-      <Filter>Tests</Filter>
-    </ClCompile>
+    </ClInclude>
+    <ClInclude Include="source\stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

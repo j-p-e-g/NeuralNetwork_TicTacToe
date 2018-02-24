@@ -1,6 +1,6 @@
-#include "../stdafx.h"
+#include "stdafx.h"
 #include "CppUnitTest.h"
-#include "../../nnTicTacToe/NeuralNetwork/NodeNetwork.h"
+#include "NeuralNetwork/NodeNetwork.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
