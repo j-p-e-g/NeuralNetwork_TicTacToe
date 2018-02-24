@@ -19,6 +19,9 @@
     <Filter Include="Tests">
       <UniqueIdentifier>{f2d8ffe9-24f2-4d86-90f8-f924bd09c951}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Game">
+      <UniqueIdentifier>{2f449e04-6638-4e74-a255-cb4948cac57a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\nnTicTacToe\source\NeuralNetwork\Node.cpp">
@@ -36,6 +39,12 @@
     <ClCompile Include="source\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Test.GameLogic.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nnTicTacToe\source\Game\GameLogic.cpp">
+      <Filter>Resource Files\Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\nnTicTacToe\source\NeuralNetwork\Node.h">
@@ -49,6 +58,9 @@
     </ClInclude>
     <ClInclude Include="source\targetver.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nnTicTacToe\source\Game\GameLogic.h">
+      <Filter>Resource Files\Game</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

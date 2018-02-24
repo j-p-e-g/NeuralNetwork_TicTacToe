@@ -154,6 +154,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\nnTicTacToe\source\Game\GameLogic.cpp" />
     <ClCompile Include="..\nnTicTacToe\source\NeuralNetwork\Node.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
@@ -171,8 +172,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Test.GameLogic.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\nnTicTacToe\source\Game\GameLogic.h" />
     <ClInclude Include="..\nnTicTacToe\source\NeuralNetwork\Node.h" />
     <ClInclude Include="..\nnTicTacToe\source\NeuralNetwork\NodeNetwork.h" />
     <ClInclude Include="source\stdafx.h" />
