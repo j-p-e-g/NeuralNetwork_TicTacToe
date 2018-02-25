@@ -43,6 +43,9 @@
     <ClCompile Include="source\Game\GameLogic.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="source\Game\TicTacToeTrainer.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\stdafx.h">
@@ -68,6 +71,9 @@
     </ClInclude>
     <ClInclude Include="source\General\Globals.h">
       <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Game\TicTacToeTrainer.h">
+      <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

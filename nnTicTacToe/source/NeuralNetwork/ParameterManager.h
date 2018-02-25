@@ -17,16 +17,16 @@ namespace NeuralNetwork
     {
     public:
         ParameterManager() = delete;
-        ParameterManager(const ParameterManagerData& pmData);
+        ParameterManager(const ParameterManagerData pmData);
 
     public:
         bool readDataFromFile();
         bool dumpDataToFile() const;
-        void fillWithRandomValues(ParamSet& pset) const;
+        void fillWithRandomValues(std::vector<double>& params) const;
         void addNewParamSet(const ParamSet& pset);
 
     private:
-        const ParameterManagerData& paramData;
+        ParameterManagerData m_paramData;
         std::map<int, ParamSet> m_paramSets;
         int m_highestId;
     };

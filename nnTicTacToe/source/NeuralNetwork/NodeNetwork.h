@@ -21,6 +21,8 @@ namespace NeuralNetwork
 
         virtual bool assignInputValues(const std::vector<double>& inputValues) = 0;
 
+        virtual bool assignParameters(const std::vector<double>& params) = 0;
+
         /// input is a copy instead of a reference, so we don't affect the initial queue
         virtual bool assignParameters(std::queue<double> params) = 0;
 
@@ -40,6 +42,7 @@ namespace NeuralNetwork
         void destroyNetwork() override;
 
         bool assignInputValues(const std::vector<double>& inputValues) override;
+        bool assignParameters(const std::vector<double>& params) override;
         bool assignParameters(std::queue<double> params) override;
         bool computeValues() override;
         int getOutputValues(std::vector<double>& outputValues) const override;

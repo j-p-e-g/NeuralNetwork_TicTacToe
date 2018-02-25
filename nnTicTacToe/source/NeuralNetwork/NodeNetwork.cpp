@@ -120,6 +120,17 @@ namespace NeuralNetwork
         return true;
     }
 
+    bool NodeNetwork::assignParameters(const std::vector<double>& params)
+    {
+        std::queue<double> qParams;
+        for (const auto& val : params)
+        {
+            qParams.push(val);
+        }
+
+        return assignParameters(qParams);
+    }
+
     bool NodeNetwork::assignParameters(std::queue<double> params)
     {
         const size_t expectedParameters = getNumParameters();

@@ -154,6 +154,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\nnTicTacToe\source\FileIO\FileManager.cpp" />
     <ClCompile Include="..\nnTicTacToe\source\Game\GameLogic.cpp" />
     <ClCompile Include="..\nnTicTacToe\source\NeuralNetwork\Node.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -163,6 +164,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\nnTicTacToe\source\NeuralNetwork\ParameterManager.cpp" />
     <ClCompile Include="source\stdafx.cpp" />
     <ClCompile Include="source\Tests\Test.Node.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -173,11 +175,14 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Test.GameLogic.cpp" />
+    <ClCompile Include="Test.ParameterManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\nnTicTacToe\source\FileIO\FileManager.h" />
     <ClInclude Include="..\nnTicTacToe\source\Game\GameLogic.h" />
     <ClInclude Include="..\nnTicTacToe\source\NeuralNetwork\Node.h" />
     <ClInclude Include="..\nnTicTacToe\source\NeuralNetwork\NodeNetwork.h" />
+    <ClInclude Include="..\nnTicTacToe\source\NeuralNetwork\ParameterManager.h" />
     <ClInclude Include="source\stdafx.h" />
     <ClInclude Include="source\targetver.h" />
   </ItemGroup>

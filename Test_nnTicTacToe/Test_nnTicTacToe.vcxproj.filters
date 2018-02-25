@@ -22,6 +22,9 @@
     <Filter Include="Resource Files\Game">
       <UniqueIdentifier>{2f449e04-6638-4e74-a255-cb4948cac57a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\FileIO">
+      <UniqueIdentifier>{bfd1f4c8-fe01-46b3-8031-b618a3603c8b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\nnTicTacToe\source\NeuralNetwork\Node.cpp">
@@ -45,6 +48,15 @@
     <ClCompile Include="..\nnTicTacToe\source\Game\GameLogic.cpp">
       <Filter>Resource Files\Game</Filter>
     </ClCompile>
+    <ClCompile Include="Test.ParameterManager.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nnTicTacToe\source\NeuralNetwork\ParameterManager.cpp">
+      <Filter>Resource Files\NodeNetwork</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nnTicTacToe\source\FileIO\FileManager.cpp">
+      <Filter>Resource Files\FileIO</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\nnTicTacToe\source\NeuralNetwork\Node.h">
@@ -61,6 +73,12 @@
     </ClInclude>
     <ClInclude Include="..\nnTicTacToe\source\Game\GameLogic.h">
       <Filter>Resource Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nnTicTacToe\source\NeuralNetwork\ParameterManager.h">
+      <Filter>Resource Files\NodeNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nnTicTacToe\source\FileIO\FileManager.h">
+      <Filter>Resource Files\FileIO</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
