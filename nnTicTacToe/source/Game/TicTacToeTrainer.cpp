@@ -62,6 +62,38 @@ namespace Game
         return true;
     }
 
+    void TicTacToeTrainer::addScore(const BasePlayer& player, double score)
+    {
+        auto& found = m_scoreMap.find(player.getId());
+        if (found == m_scoreMap.end())
+        {
+            m_scoreMap.emplace(player.getId(), std::vector<double>({ score }));
+        }
+        else
+        {
+            found->second.push_back(score);
+        }
+    }
+
+    double TicTacToeTrainer::getAverageScoreForId(int id) const
+    {
+        double score = 0.0;
+
+        const auto& found = m_scoreMap.find(id);
+        if (found != m_scoreMap.end())
+        {
+            assert(!found->second.empty());
+            for (const auto& val : found->second)
+            {
+                score += val;
+            }
+
+            score /= found->second.size();
+        }
+
+        return score;
+    }
+
     void TicTacToeTrainer::run()
     {
         if (!setup())
@@ -69,6 +101,8 @@ namespace Game
             std::cerr << "Failed to setup TicTacToeTrainer!" << std::endl;
             return;
         }
+
+        RandomPlayer randomPlayer(-1);
 
         for (int k = 0; k < m_numParamSets; k++)
         {
@@ -79,10 +113,21 @@ namespace Game
             m_paramManager->getParamSetForId(k, pset);
             m_nodeNetwork->assignParameters(pset.params);
 
-            AiPlayer playerA(0, m_nodeNetwork);
-            RandomPlayer playerB(1);
+            AiPlayer aiPlayer(k, m_nodeNetwork);
 
-            playMatch(playerA, playerB);
+            // try playing both as the first and the second player
+            playMatch(randomPlayer, aiPlayer);
+            playMatch(aiPlayer, randomPlayer);
+
+            // also play against yourself
+            playMatch(aiPlayer, aiPlayer);
+        }
+
+        // update all scores
+        for (int k = 0; k < m_numParamSets; k++)
+        {
+            double avgScore = getAverageScoreForId(k);
+            m_paramManager->setScore(k, avgScore);
         }
 
         std::vector<int> bestSetIds;
@@ -92,11 +137,13 @@ namespace Game
         ParamSet pset;
         m_paramManager->getParamSetForId(bestSetIds[0], pset);
 
-        std::cout << std::endl << "Best parameter set: " << bestSetIds[0] << " (score: " << pset.score << ")" << std::endl;
+        std::cout << std::endl << "Best parameter set: " << bestSetIds[0] << " (avg. score: " << pset.score << ")" << std::endl;
     }
 
     void TicTacToeTrainer::playMatch(BasePlayer& playerA, BasePlayer& playerB)
     {
+        std::cout << std::endl << "New match " << playerA.getPlayerType().c_str() << " vs. " << playerB.getPlayerType().c_str() << std::endl;
+
         // reset board
         m_gameLogic->initBoard();
 
@@ -105,12 +152,11 @@ namespace Game
         GameState lastStatePlayerB = GS_ONGOING;
 
         bool firstPlayerTurn = true;
-
         do
         {
             std::cout << "Turn " << turnCount << ": " << (firstPlayerTurn ? "player A" : "player B") << std::endl;
 
-            const GameState state = playOneTurn(firstPlayerTurn ? playerA : playerB);
+            const GameState state = playOneTurn(firstPlayerTurn ? playerA : playerB, firstPlayerTurn);
             turnCount++;
 
             if (state == GS_ONGOING)
@@ -147,7 +193,7 @@ namespace Game
             const int turnCountPlayerA = static_cast<int>(std::ceil((float)turnCount / 2));
             double scorePlayerA = computeMatchScore(playerA, turnCountPlayerA, lastStatePlayerA);
             std::cout << "Score player A: " << scorePlayerA << std::endl;
-            m_paramManager->setScore(playerA.getId(), scorePlayerA);
+            addScore(playerA, scorePlayerA);
         }
 
         if (lastStatePlayerB != GS_ONGOING)
@@ -155,11 +201,11 @@ namespace Game
             const int turnCountPlayerB = static_cast<int>(std::floor((float)turnCount / 2));
             double scorePlayerB = computeMatchScore(playerB, turnCountPlayerB, lastStatePlayerB);
             std::cout << "Score player B: " << scorePlayerB << std::endl;
-            m_paramManager->setScore(playerB.getId(), scorePlayerB);
+            addScore(playerB, scorePlayerB);
         }
     }
 
-    GameState TicTacToeTrainer::playOneTurn(BasePlayer& player)
+    GameState TicTacToeTrainer::playOneTurn(BasePlayer& player, bool firstPlayer)
     {
         std::vector<CellState> gameCells;
         m_gameLogic->getGameCells(gameCells);
@@ -172,7 +218,7 @@ namespace Game
             return GS_INVALID;
         }
 
-        m_gameLogic->applyMove(0, nextMove);
+        m_gameLogic->applyMove(firstPlayer ? 0 : 1, nextMove);
 
         const GameState state = m_gameLogic->evaluateBoard();
         std::cout << "Outcome: " << GameLogic::getGameStateDescription(state).c_str() << std::endl;
@@ -189,7 +235,7 @@ namespace Game
         case GS_INVALID:
             // made an invalid move
             // the penalty is smaller the later this happens
-            score -= numTurns;
+            score = numTurns - 6;
             break;
         case GS_ONGOING:
             // the other player made an invalid move

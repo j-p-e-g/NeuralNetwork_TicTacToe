@@ -21,8 +21,10 @@ namespace Game
 
     private:
         void playMatch(BasePlayer& playerA, BasePlayer& playerB);
-        GameState playOneTurn(BasePlayer& player);
+        GameState playOneTurn(BasePlayer& player, bool firstPlayer);
         double computeMatchScore(BasePlayer& player, int numTurns, GameState finalGameState);
+        void addScore(const BasePlayer& player, double score);
+        double getAverageScoreForId(int id) const;
 
     private:
         bool m_initialized = false;
@@ -35,5 +37,6 @@ namespace Game
         std::shared_ptr<TicTacToeLogic> m_gameLogic;
         std::shared_ptr<NeuralNetwork::ParameterManager> m_paramManager;
         std::shared_ptr<NeuralNetwork::NodeNetwork> m_nodeNetwork;
+        std::map<int, std::vector<double>> m_scoreMap;
     };
 }

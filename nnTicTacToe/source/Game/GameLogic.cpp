@@ -44,11 +44,12 @@ namespace Game
     {
         switch (state)
         {
-        case GS_GAMEOVER_WON: return "won";
-        case GS_GAMEOVER_LOST: return "lost";
+        case GS_GAMEOVER_WON:     return "won";
+        case GS_GAMEOVER_LOST:    return "lost";
         case GS_GAMEOVER_TIMEOUT: return "timeout";
-        case GS_ONGOING: return "in progress";
-        default: return "";
+        case GS_ONGOING:          return "in progress";
+        case GS_INVALID:          return "invalid";
+        default:                  return "";
         }
     }
 

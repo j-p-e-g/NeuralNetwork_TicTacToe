@@ -15,6 +15,7 @@ namespace Game
 
     public:
         int getId() const { return m_id; }
+        virtual std::string getPlayerType() const = 0;
         virtual int decideMove(const std::vector<CellState>& gameCells) = 0;
 
     private:
@@ -28,6 +29,8 @@ namespace Game
         RandomPlayer(int id);
 
     public:
+        std::string getPlayerType() const override { return "RandomPlayer"; }
+
         /// pick a random non-occupied cell
         int decideMove(const std::vector<CellState>& gameCells) override;
 
@@ -43,6 +46,7 @@ namespace Game
         AiPlayer(int id, std::shared_ptr<NeuralNetwork::NodeNetwork>& network);
 
     public:
+        std::string getPlayerType() const override { return "AiPlayer"; }
         int decideMove(const std::vector<CellState>& gameCells) override;
         void getNodeNetworkInputValues(const std::vector<CellState>& gameCells, std::vector<double>& inputValues) const;
 
