@@ -59,9 +59,28 @@ namespace NeuralNetwork
     bool ParameterManager::dumpDataToFile() const
     {
         json j;
-        j["score"] = -0.279;
-        j["id"] = "test";
-        j["params"] = { 9.32, -4.205, 0.55 };
+        j["values"] = {};
+
+        for (const auto& pset : m_paramSets)
+        {
+            json jps;
+            jps["id"] = pset.first;
+            jps["score"] = pset.second.score;
+            jps["params"] = pset.second.params;
+
+            j["values"].push_back(jps);
+        }
+
+        std::vector<int> sortedIds;
+        getParameterSetIdsSortedByScore(sortedIds);
+        j["bestIds"] = sortedIds;
+
+        if (!sortedIds.empty())
+        {
+            ParamSet pset;
+            getParamSetForId(sortedIds[0], pset);
+            j["bestScore"] = pset.score;
+        }
 
         const std::string fileName = "data/test.json";
         return FileManager::writeJsonToFile(fileName, j);
@@ -115,7 +134,7 @@ namespace NeuralNetwork
         return true;
     }
 
-    void ParameterManager::getParameterSetIdsSortedByScore(std::vector<int>& idsSortedByScore)
+    void ParameterManager::getParameterSetIdsSortedByScore(std::vector<int>& idsSortedByScore) const
     {
         // create another map with score as the key, auto-sorted in descending order
         std::map<double, std::vector<int>, std::greater<double>> scoreMap;

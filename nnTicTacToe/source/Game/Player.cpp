@@ -40,7 +40,7 @@ namespace Game
             return -1;
         }
 
-        std::uniform_int_distribution<int> rndDist(0, static_cast<int>(candidates.size()));
+        std::uniform_int_distribution<int> rndDist(0, static_cast<int>(candidates.size())-1);
         const int randomIndex = rndDist(m_mt);
         return candidates[randomIndex];
     }

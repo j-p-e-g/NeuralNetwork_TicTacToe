@@ -130,6 +130,8 @@ namespace Game
             m_paramManager->setScore(k, avgScore);
         }
 
+        m_paramManager->dumpDataToFile();
+
         std::vector<int> bestSetIds;
         m_paramManager->getParameterSetIdsSortedByScore(bestSetIds);
         assert(!bestSetIds.empty());

@@ -27,7 +27,7 @@ namespace NeuralNetwork
         void setScore(int id, double score);
         void setParameters(int id, const std::vector<double>& pset);
         bool getParamSetForId(int id, ParamSet& pset) const;
-        void getParameterSetIdsSortedByScore(std::vector<int>& bestIds);
+        void getParameterSetIdsSortedByScore(std::vector<int>& bestIds) const;
 
     private:
         ParameterManagerData m_paramData;
