@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="source\FileIO\FileManager.cpp" />
     <ClCompile Include="source\Game\GameLogic.cpp" />
+    <ClCompile Include="source\Game\Player.cpp" />
     <ClCompile Include="source\Game\TicTacToeTrainer.cpp" />
     <ClCompile Include="source\NeuralNetwork\Node.cpp" />
     <ClCompile Include="source\NeuralNetwork\NodeNetwork.cpp" />
@@ -31,6 +32,7 @@
   <ItemGroup>
     <ClInclude Include="source\FileIO\FileManager.h" />
     <ClInclude Include="source\Game\GameLogic.h" />
+    <ClInclude Include="source\Game\Player.h" />
     <ClInclude Include="source\Game\TicTacToeTrainer.h" />
     <ClInclude Include="source\General\Globals.h" />
     <ClInclude Include="source\NeuralNetwork\Node.h" />

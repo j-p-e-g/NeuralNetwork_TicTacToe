@@ -57,6 +57,12 @@
     <ClCompile Include="..\nnTicTacToe\source\FileIO\FileManager.cpp">
       <Filter>Resource Files\FileIO</Filter>
     </ClCompile>
+    <ClCompile Include="..\nnTicTacToe\source\Game\Player.cpp">
+      <Filter>Resource Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Test.Player.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\nnTicTacToe\source\NeuralNetwork\Node.h">
@@ -79,6 +85,9 @@
     </ClInclude>
     <ClInclude Include="..\nnTicTacToe\source\FileIO\FileManager.h">
       <Filter>Resource Files\FileIO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nnTicTacToe\source\Game\Player.h">
+      <Filter>Resource Files\Game</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

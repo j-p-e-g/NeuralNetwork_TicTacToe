@@ -46,6 +46,9 @@
     <ClCompile Include="source\Game\TicTacToeTrainer.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="source\Game\Player.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\stdafx.h">
@@ -73,6 +76,9 @@
       <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="source\Game\TicTacToeTrainer.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Game\Player.h">
       <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>

@@ -5,6 +5,7 @@
 #include "GameLogic.h"
 #include "NeuralNetwork/NodeNetwork.h"
 #include "NeuralNetwork/ParameterManager.h"
+#include "Player.h"
 
 namespace Game
 {
@@ -19,9 +20,9 @@ namespace Game
         void run();
 
     private:
-        double playMatch();
-        double computeMatchScore(int numTurns, GameState finalGameState);
-        GameState playOneTurn();
+        void playMatch(BasePlayer& playerA, BasePlayer& playerB);
+        GameState playOneTurn(BasePlayer& player);
+        double computeMatchScore(BasePlayer& player, int numTurns, GameState finalGameState);
 
     private:
         bool m_initialized = false;

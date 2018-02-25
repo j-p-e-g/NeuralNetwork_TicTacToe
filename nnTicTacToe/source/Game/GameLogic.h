@@ -6,21 +6,6 @@
 
 namespace Game
 {
-    enum GameState
-    {
-        GS_ONGOING,
-        GS_GAMEOVER_WON,
-        GS_GAMEOVER_LOST,
-        GS_GAMEOVER_TIMEOUT
-    };
-
-    enum CellState
-    {
-        CS_EMPTY = 0,
-        CS_PLAYER1 = 1,
-        CS_PLAYER2 = -1
-    };
-
     class GameLogic
     {
     public:
@@ -42,6 +27,7 @@ namespace Game
         int getBoardSize() const;
         int countCellState(const CellState state) const;
         CellState getCellValue(int row, int col) const;
+        virtual void getGameCells(std::vector<CellState>& gameCells) const;
 
     protected:
         std::vector<CellState> m_gameCells;

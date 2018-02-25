@@ -16,6 +16,11 @@ namespace Game
         return m_gameCells[index];
     }
 
+    void GameLogic::getGameCells(std::vector<CellState>& gameCells) const
+    {
+        gameCells = m_gameCells;
+    }
+
     int GameLogic::getBoardSize() const
     {
         return m_numRows * m_numCols;

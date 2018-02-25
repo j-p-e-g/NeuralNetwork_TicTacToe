@@ -79,9 +79,10 @@ namespace Game
             m_paramManager->getParamSetForId(k, pset);
             m_nodeNetwork->assignParameters(pset.params);
 
-            const double score = playMatch();
-            std::cout << "Score: " << score << std::endl;
-            m_paramManager->setScore(k, score);
+            AiPlayer playerA(0, m_nodeNetwork);
+            RandomPlayer playerB(1);
+
+            playMatch(playerA, playerB);
         }
 
         std::vector<int> bestSetIds;
@@ -91,79 +92,119 @@ namespace Game
         ParamSet pset;
         m_paramManager->getParamSetForId(bestSetIds[0], pset);
 
-        std::cout << "Best parameter set: " << bestSetIds[0] << " (score: " << pset.score << ")" << std::endl;
+        std::cout << std::endl << "Best parameter set: " << bestSetIds[0] << " (score: " << pset.score << ")" << std::endl;
     }
 
-    double TicTacToeTrainer::playMatch()
+    void TicTacToeTrainer::playMatch(BasePlayer& playerA, BasePlayer& playerB)
     {
         // reset board
         m_gameLogic->initBoard();
 
         int turnCount = 1;
-        GameState state = GS_ONGOING;
+        GameState lastStatePlayerA = GS_ONGOING;
+        GameState lastStatePlayerB = GS_ONGOING;
+
+        bool firstPlayerTurn = true;
 
         do
         {
-            std::cout << "Turn " << turnCount << ": " << std::endl;
-            state = playOneTurn();
+            std::cout << "Turn " << turnCount << ": " << (firstPlayerTurn ? "player A" : "player B") << std::endl;
+
+            const GameState state = playOneTurn(firstPlayerTurn ? playerA : playerB);
             turnCount++;
-        }
-        while (state == GS_ONGOING);
 
-        return computeMatchScore(turnCount, state);
+            if (state == GS_ONGOING)
+            {
+                firstPlayerTurn = !firstPlayerTurn;
+            }
+            else
+            {
+                if (firstPlayerTurn)
+                {
+                    lastStatePlayerA = state;
+                }
+                else
+                {
+                    lastStatePlayerB = state;
+                }
+
+                if (lastStatePlayerA == GS_GAMEOVER_WON || lastStatePlayerB == GS_GAMEOVER_LOST)
+                {
+                    lastStatePlayerA = GS_GAMEOVER_WON;
+                    lastStatePlayerB = GS_GAMEOVER_LOST;
+                }
+                else if (lastStatePlayerA == GS_GAMEOVER_LOST || lastStatePlayerB == GS_GAMEOVER_WON)
+                {
+                    lastStatePlayerA = GS_GAMEOVER_LOST;
+                    lastStatePlayerB = GS_GAMEOVER_WON;
+                }
+            }
+        }
+        while (lastStatePlayerA == GS_ONGOING && lastStatePlayerB == GS_ONGOING);
+
+        if (lastStatePlayerA != GS_ONGOING)
+        {
+            const int turnCountPlayerA = static_cast<int>(std::ceil((float)turnCount / 2));
+            double scorePlayerA = computeMatchScore(playerA, turnCountPlayerA, lastStatePlayerA);
+            std::cout << "Score player A: " << scorePlayerA << std::endl;
+            m_paramManager->setScore(playerA.getId(), scorePlayerA);
+        }
+
+        if (lastStatePlayerB != GS_ONGOING)
+        {
+            const int turnCountPlayerB = static_cast<int>(std::floor((float)turnCount / 2));
+            double scorePlayerB = computeMatchScore(playerB, turnCountPlayerB, lastStatePlayerB);
+            std::cout << "Score player B: " << scorePlayerB << std::endl;
+            m_paramManager->setScore(playerB.getId(), scorePlayerB);
+        }
     }
 
-    double TicTacToeTrainer::computeMatchScore(int numTurns, GameState finalGameState)
+    GameState TicTacToeTrainer::playOneTurn(BasePlayer& player)
     {
-        double score = 0.0;
-        score += numTurns;
+        std::vector<CellState> gameCells;
+        m_gameLogic->getGameCells(gameCells);
+        const int nextMove = player.decideMove(gameCells);
+        std::cout << "next move: " << nextMove << std::endl;
 
-        switch (finalGameState)
-        {
-        case GS_GAMEOVER_LOST:
-            // still much better than being stuck after an invalid move
-            score *= 2;
-            break;
-        case GS_GAMEOVER_WON:
-            score *= 5;
-            break;
-        default:
-            break;
-        }
-
-        return score;
-    }
-
-    GameState TicTacToeTrainer::playOneTurn()
-    {
-        std::vector<double> inputValues;
-        m_gameLogic->getNodeNetworkInputValues(inputValues);
-        m_nodeNetwork->assignInputValues(inputValues);
-
-        m_nodeNetwork->computeValues();
-
-        std::vector<double> outputValues;
-        int bestResult = m_nodeNetwork->getOutputValues(outputValues);
-
-        std::cout << "Output: ";
-        for (auto val : outputValues)
-        {
-            std::cout << val << "  ";
-        }
-
-        std::cout << "--> best index: " << bestResult << std::endl;
-
-        if (!m_gameLogic->isValidMove(0, bestResult))
+        if (!m_gameLogic->isValidMove(0, nextMove))
         {
             std::cerr << "Invalid move" << std::endl;
-            return GS_GAMEOVER_LOST;
+            return GS_INVALID;
         }
 
-        m_gameLogic->applyMove(0, bestResult);
+        m_gameLogic->applyMove(0, nextMove);
 
         const GameState state = m_gameLogic->evaluateBoard();
         std::cout << "Outcome: " << GameLogic::getGameStateDescription(state).c_str() << std::endl;
 
         return state;
+    }
+
+    double TicTacToeTrainer::computeMatchScore(BasePlayer& player, int numTurns, GameState finalGameState)
+    {
+        double score = 0.0;
+
+        switch (finalGameState)
+        {
+        case GS_INVALID:
+            // made an invalid move
+            // the penalty is smaller the later this happens
+            score -= numTurns;
+            break;
+        case GS_ONGOING:
+            // the other player made an invalid move
+            break;
+        case GS_GAMEOVER_LOST:
+            // still much better than being stuck after an invalid move
+            // the bonus is larger the later this happens
+            score += numTurns;
+            break;
+        case GS_GAMEOVER_WON:
+            // the bonus is larger the earlier this happens
+            score += (6 - numTurns) + 10;
+            break;
+        }
+
+        return score;
     }
 }
