@@ -17,7 +17,7 @@ namespace NeuralNetwork
 
     ParameterManager::ParameterManager(const ParameterManagerData pmData)
         : m_paramData(pmData)
-        , m_highestId(0)
+        , m_nextId(0)
     {
     }
 
@@ -48,7 +48,7 @@ namespace NeuralNetwork
                 if (it->find("id") != it->end())
                 {
                     const int id = it->at("id");
-                    m_highestId = std::max<int>(id, m_highestId);
+                    m_nextId = std::max<int>(id + 1, m_nextId);
                 }
             }
         }
@@ -84,6 +84,62 @@ namespace NeuralNetwork
 
     void ParameterManager::addNewParamSet(const ParamSet& pset)
     {
-        m_paramSets.emplace(++m_highestId, pset);
+        m_paramSets.emplace(m_nextId++, pset);
+    }
+
+    void ParameterManager::setScore(int id, double score)
+    {
+        auto& found = m_paramSets.find(id);
+        assert(found != m_paramSets.end());
+
+        found->second.score = score;
+    }
+
+    void ParameterManager::setParameters(int id, const std::vector<double>& params)
+    {
+        auto& found = m_paramSets.find(id);
+        assert(found != m_paramSets.end());
+
+        found->second.params = params;
+    }
+
+    bool ParameterManager::getParamSetForId(int id, ParamSet& pset) const
+    {
+        const auto& found = m_paramSets.find(id);
+        if (found == m_paramSets.end())
+        {
+            return false;
+        }
+
+        pset = found->second;
+        return true;
+    }
+
+    void ParameterManager::getParameterSetIdsSortedByScore(std::vector<int>& idsSortedByScore)
+    {
+        // create another map with score as the key, auto-sorted in descending order
+        std::map<double, std::vector<int>, std::greater<double>> scoreMap;
+
+        for (const auto& pset : m_paramSets)
+        {
+            const auto& foundScore = scoreMap.find(pset.second.score);
+            if (foundScore == scoreMap.end())
+            {
+                scoreMap.emplace(pset.second.score, std::vector<int>({ pset.first }));
+            }
+            else
+            {
+                foundScore->second.push_back(pset.first);
+            }
+        }
+
+        idsSortedByScore.clear();
+        for (const auto& score : scoreMap)
+        {
+            for (auto id : score.second)
+            {
+                idsSortedByScore.push_back(id);
+            }
+        }
     }
 }

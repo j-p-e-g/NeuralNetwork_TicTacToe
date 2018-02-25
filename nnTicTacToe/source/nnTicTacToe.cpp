@@ -4,10 +4,6 @@
 int main()
 {
     Game::TicTacToeTrainer trainer;
-    if (trainer.setup())
-    {
-        trainer.run();
-    }
-
+    trainer.run();
     return 0;
 }

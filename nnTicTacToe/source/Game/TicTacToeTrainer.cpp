@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include <assert.h> 
 #include <iostream>
 
 #include "TicTacToeTrainer.h"
@@ -15,6 +16,7 @@ namespace Game
     TicTacToeTrainer::TicTacToeTrainer()
         : m_minParamValue(-10.f)
         , m_maxParamValue(10.f)
+        , m_numParamSets(5)
         , m_numMatches(10)
     {
     }
@@ -48,39 +50,58 @@ namespace Game
 
         m_paramManager = std::make_shared<ParameterManager>(pmData);
 
+        // create N different parameter sets
+        for (int k = 0; k < m_numParamSets; k++)
+        {
+            ParamSet pset;
+            m_paramManager->fillWithRandomValues(pset.params);
+            m_paramManager->addNewParamSet(pset);
+        }
+
         m_initialized = true;
         return true;
     }
 
-    void TicTacToeTrainer::setupTicTacToeTest()
+    void TicTacToeTrainer::run()
     {
-        if (!m_initialized)
+        if (!setup())
         {
+            std::cerr << "Failed to setup TicTacToeTrainer!" << std::endl;
             return;
         }
 
-        int roundCount = 1;
-        for (int k = 0; k < m_numMatches; k++)
+        for (int k = 0; k < m_numParamSets; k++)
         {
-            std::cout << std::endl << "Round " << roundCount << ": " << std::endl;
+            // reset network parameters
+            std::cout << std::endl << "Trying parameter set " << k << ": " << std::endl;
 
-            playOneMatch();
-            roundCount++;
+            ParamSet pset;
+            m_paramManager->getParamSetForId(k, pset);
+            m_nodeNetwork->assignParameters(pset.params);
+
+            const double score = playMatch();
+            std::cout << "Score: " << score << std::endl;
+            m_paramManager->setScore(k, score);
         }
+
+        std::vector<int> bestSetIds;
+        m_paramManager->getParameterSetIdsSortedByScore(bestSetIds);
+        assert(!bestSetIds.empty());
+
+        ParamSet pset;
+        m_paramManager->getParamSetForId(bestSetIds[0], pset);
+
+        std::cout << "Best parameter set: " << bestSetIds[0] << " (score: " << pset.score << ")" << std::endl;
     }
 
-    void TicTacToeTrainer::playOneMatch()
+    double TicTacToeTrainer::playMatch()
     {
         // reset board
         m_gameLogic->initBoard();
 
-        // reset parameters
-        ParamSet pset;
-        m_paramManager->fillWithRandomValues(pset.params);
-        m_nodeNetwork->assignParameters(pset.params);
-
         int turnCount = 1;
         GameState state = GS_ONGOING;
+
         do
         {
             std::cout << "Turn " << turnCount << ": " << std::endl;
@@ -88,6 +109,29 @@ namespace Game
             turnCount++;
         }
         while (state == GS_ONGOING);
+
+        return computeMatchScore(turnCount, state);
+    }
+
+    double TicTacToeTrainer::computeMatchScore(int numTurns, GameState finalGameState)
+    {
+        double score = 0.0;
+        score += numTurns;
+
+        switch (finalGameState)
+        {
+        case GS_GAMEOVER_LOST:
+            // still much better than being stuck after an invalid move
+            score *= 2;
+            break;
+        case GS_GAMEOVER_WON:
+            score *= 5;
+            break;
+        default:
+            break;
+        }
+
+        return score;
     }
 
     GameState TicTacToeTrainer::playOneTurn()
@@ -121,16 +165,5 @@ namespace Game
         std::cout << "Outcome: " << GameLogic::getGameStateDescription(state).c_str() << std::endl;
 
         return state;
-    }
-
-    void TicTacToeTrainer::run()
-    {
-        if (!m_initialized)
-        {
-            std::cerr << "TicTacToeTrainer was not setup correctly. Call setup() to initialize." << std::endl;
-            return;
-        }
-
-        setupTicTacToeTest();
     }
 }

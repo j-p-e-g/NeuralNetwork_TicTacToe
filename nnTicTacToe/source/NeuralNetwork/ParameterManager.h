@@ -24,10 +24,14 @@ namespace NeuralNetwork
         bool dumpDataToFile() const;
         void fillWithRandomValues(std::vector<double>& params) const;
         void addNewParamSet(const ParamSet& pset);
+        void setScore(int id, double score);
+        void setParameters(int id, const std::vector<double>& pset);
+        bool getParamSetForId(int id, ParamSet& pset) const;
+        void getParameterSetIdsSortedByScore(std::vector<int>& bestIds);
 
     private:
         ParameterManagerData m_paramData;
         std::map<int, ParamSet> m_paramSets;
-        int m_highestId;
+        int m_nextId;
     };
 }
