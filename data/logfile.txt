@@ -1,253 +1,49 @@
 TicTacToeTrainer: 
   #paramSets: 5
-  #matches: 10
+  #matches: 50
   random param values picked within [-10, 10]
 
 NodeNetwork: 
-  #layers: 2
+  #layers: 3
   #input nodes: 18
   #output nodes: 9
-  #hidden layer nodes: 
-  #parameters: 171
+  #hidden layer nodes: 9
+  #parameters: 261
 
 -----------------------------------------------
 Trying parameter set 0: 
-New match RandomPlayer vs. AiPlayer
-Turn 1: player A
-next move: 2
-Outcome: in progress
-Turn 2: player B
-Output: 29.6251  -62.9241  -6.3677  -64.0932  -7.73274  26.2491  -13.7482  -4.0874  30.0253  --> best index: 8
-next move: 8
-Outcome: in progress
-Turn 3: player A
-next move: 3
-Outcome: in progress
-Turn 4: player B
-Output: 28.5931  -41.2725  -23.1668  -39.648  -12.3604  15.1519  3.18811  7.5767  13.6961  --> best index: 0
-next move: 0
-Outcome: in progress
-Turn 5: player A
-next move: 1
-Outcome: in progress
-Turn 6: player B
-Output: 29.8334  -15.8113  4.23054  -19.3633  -11.2466  18.8849  0.23192  10.09  16.5343  --> best index: 0
-next move: 0
-Invalid move
-Score player B: -3
-New match AiPlayer vs. RandomPlayer
-Turn 1: player A
-Output: 37.3755  -72.9914  12.6226  -54.9285  11.4587  11.883  5.49679  3.64603  18.8306  --> best index: 0
-next move: 0
-Outcome: in progress
-Turn 2: player B
-next move: 7
-Outcome: in progress
-Turn 3: player A
-Output: 26.9563  -49.7342  22.9833  -21.7843  32.2762  15.5865  26.3852  27.0082  33.5719  --> best index: 8
-next move: 8
-Outcome: in progress
-Turn 4: player B
-next move: 2
-Outcome: in progress
-Turn 5: player A
-Output: 9.16999  -32.6686  21.29  -48.8759  29.3278  -9.58767  -2.17063  21.2901  28.1663  --> best index: 4
-next move: 4
-Outcome: won
-Score player A: 13
-Score player B: 3
-New match AiPlayer vs. AiPlayer
-Turn 1: player A
-Output: 37.3755  -72.9914  12.6226  -54.9285  11.4587  11.883  5.49679  3.64603  18.8306  --> best index: 0
-next move: 0
-Outcome: in progress
-Turn 2: player B
-Output: 20.8871  -54.0274  25.8777  -41.1986  28.1045  2.36748  22.986  11.4011  24.398  --> best index: 4
-next move: 4
-Outcome: in progress
-Turn 3: player A
-Output: 9.95445  -45.6633  11.8737  -22.7193  8.35076  -2.30833  20.1045  12.0192  9.2769  --> best index: 6
-next move: 6
-Outcome: in progress
-Turn 4: player B
-Output: -6.75016  -36.9487  22.5812  -18.2479  -11.1346  0.0585068  22.1701  0.667525  16.6697  --> best index: 2
-next move: 2
-Outcome: in progress
-Turn 5: player A
-Output: -21.2227  -17.5343  40.6643  -34.7495  -1.50757  -8.31232  10.8751  -6.18915  25.4951  --> best index: 2
-next move: 2
-Invalid move
-Score player A: -3
+#invalid: 87
+#lost: 13
+Scores: -8,  -8,  -8,  -8,  -6,  -8,  -8,  -8,  -8,  4,  -8,  -8,  -8,  -8,  -6,  -8,  -8,  -6,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -6,  -6,  -8,  -8,  -8,  -8,  -8,  -6,  -6,  4,  -8,  -8,  4,  -6,  -8,  -8,  -8,  -6,  4,  -8,  -8,  -6,  -8,  -8,  -8,  -8,  -6,  -6,  3,  -8,  -8,  -6,  -8,  3,  -10,  -8,  -10,  -10,  3,  -10,  -10,  3,  -8,  -6,  -8,  -8,  -6,  -8,  3,  -8,  -8,  -8,  -8,  -6,  4,  -8,  -6,  -10,  -8,  -10,  -8,  -6,  3,  -10,  -6,  -4,  -6,  -8,  3,  -8,  -8,  3,  
+outcome score: 13
+avg. score: -6.24
 -----------------------------------------------
 Trying parameter set 1: 
-New match RandomPlayer vs. AiPlayer
-Turn 1: player A
-next move: 4
-Outcome: in progress
-Turn 2: player B
-Output: 3.83088  25.5572  50.725  3.66334  -18.8975  -7.84176  45.0285  -17.4324  -6.046  --> best index: 2
-next move: 2
-Outcome: in progress
-Turn 3: player A
-next move: 3
-Outcome: in progress
-Turn 4: player B
-Output: 1.21206  10.9971  46.4227  -29.6826  -14.6075  -26.2052  28.7418  -18.242  -26.4457  --> best index: 2
-next move: 2
-Invalid move
-Score player B: -4
-New match AiPlayer vs. RandomPlayer
-Turn 1: player A
-Output: 16.4088  25.6083  36.4949  7.57577  -25.6362  -25.4046  41.9279  -3.44117  12.973  --> best index: 6
-next move: 6
-Outcome: in progress
-Turn 2: player B
-next move: 5
-Outcome: in progress
-Turn 3: player A
-Output: 30.584  26.7764  11.5801  6.12944  0.210606  -39.4304  58.7185  24.7083  17.7164  --> best index: 6
-next move: 6
-Invalid move
-Score player A: -4
-New match AiPlayer vs. AiPlayer
-Turn 1: player A
-Output: 16.4088  25.6083  36.4949  7.57577  -25.6362  -25.4046  41.9279  -3.44117  12.973  --> best index: 6
-next move: 6
-Outcome: in progress
-Turn 2: player B
-Output: 22.8126  13.1197  18.3247  -0.108749  -11.499  -40.2141  55.6686  10.6268  27.2527  --> best index: 6
-next move: 6
-Invalid move
-Score player B: -5
+#invalid: 99
+#lost: 1
+Scores: -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -6,  -8,  -8,  -8,  -8,  -8,  -8,  -6,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  3,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  
+outcome score: 1
+avg. score: -7.85
 -----------------------------------------------
 Trying parameter set 2: 
-New match RandomPlayer vs. AiPlayer
-Turn 1: player A
-next move: 5
-Outcome: in progress
-Turn 2: player B
-Output: 17.0964  -13.0109  4.78781  -38.672  11.6466  -24.9892  10.6649  -18.8077  -12.5588  --> best index: 0
-next move: 0
-Outcome: in progress
-Turn 3: player A
-next move: 6
-Outcome: in progress
-Turn 4: player B
-Output: -10.0616  14.5758  -5.18838  -27.3194  11.6008  -15.7686  16.5512  -19.3959  -0.139161  --> best index: 6
-next move: 6
-Invalid move
-Score player B: -4
-New match AiPlayer vs. RandomPlayer
-Turn 1: player A
-Output: 27.3252  -25.5415  -7.44292  -19.6642  22.5914  -39.4117  26.6193  -14.1612  -13.5486  --> best index: 0
-next move: 0
-Outcome: in progress
-Turn 2: player B
-next move: 8
-Outcome: in progress
-Turn 3: player A
-Output: 52.6049  -51.8151  12.3322  -27.3703  13.7724  -30.2758  33.7539  11.3696  -20.9794  --> best index: 0
-next move: 0
-Invalid move
-Score player A: -4
-New match AiPlayer vs. AiPlayer
-Turn 1: player A
-Output: 27.3252  -25.5415  -7.44292  -19.6642  22.5914  -39.4117  26.6193  -14.1612  -13.5486  --> best index: 0
-next move: 0
-Outcome: in progress
-Turn 2: player B
-Output: 43.1174  -35.6116  11.9327  -34.7882  9.64787  -38.5392  21.5535  -1.87737  -1.56074  --> best index: 0
-next move: 0
-Invalid move
-Score player B: -5
+#invalid: 95
+#lost: 5
+Scores: -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -6,  -8,  -8,  -8,  -10,  -8,  -8,  -8,  -8,  -8,  -10,  -10,  -8,  -8,  -8,  -8,  -8,  3,  -8,  3,  3,  3,  -8,  -8,  -8,  -6,  3,  -8,  -8,  -8,  -8,  -8,  -8,  -10,  -8,  -8,  -8,  -8,  -8,  -8,  -8,  -6,  -8,  -8,  -8,  -8,  
+outcome score: 5
+avg. score: -7.47
 -----------------------------------------------
 Trying parameter set 3: 
-New match RandomPlayer vs. AiPlayer
-Turn 1: player A
-next move: 7
-Outcome: in progress
-Turn 2: player B
-Output: -27.1755  -20.155  -18.9614  18.8857  28.288  2.09729  5.00986  -10.162  -7.73868  --> best index: 4
-next move: 4
-Outcome: in progress
-Turn 3: player A
-next move: 3
-Outcome: in progress
-Turn 4: player B
-Output: -35.1992  -20.4047  -11.6726  8.65425  24.1568  17.6137  -21.1077  -1.45423  -0.650959  --> best index: 4
-next move: 4
-Invalid move
-Score player B: -4
-New match AiPlayer vs. RandomPlayer
-Turn 1: player A
-Output: -39.0759  -28.6281  -11.0998  3.5746  23.4253  -12.3956  -7.8594  -4.17362  7.65581  --> best index: 4
-next move: 4
-Outcome: in progress
-Turn 2: player B
-next move: 2
-Outcome: in progress
-Turn 3: player A
-Output: -12.0856  -15.1166  -4.12849  20.8344  39.565  -10.3826  -7.14961  23.4462  11.0819  --> best index: 4
-next move: 4
-Invalid move
-Score player A: -4
-New match AiPlayer vs. AiPlayer
-Turn 1: player A
-Output: -39.0759  -28.6281  -11.0998  3.5746  23.4253  -12.3956  -7.8594  -4.17362  7.65581  --> best index: 4
-next move: 4
-Outcome: in progress
-Turn 2: player B
-Output: -26.4625  -18.9467  -13.3637  19.4245  29.1675  -26.5038  -18.8799  8.54691  19.0641  --> best index: 4
-next move: 4
-Invalid move
-Score player B: -5
+#invalid: 71
+#lost: 29
+Scores: -6,  -6,  -6,  -8,  4,  4,  4,  -6,  -6,  -6,  -6,  -6,  -6,  -6,  -8,  -8,  -6,  4,  -6,  -8,  4,  4,  4,  -6,  4,  -8,  -8,  4,  -6,  -6,  -6,  -6,  -8,  -8,  -6,  -6,  -8,  -6,  4,  -6,  -6,  -6,  -8,  -6,  -6,  -8,  -6,  -6,  -6,  4,  3,  3,  3,  3,  -8,  3,  -8,  -8,  -8,  3,  -10,  -10,  3,  -8,  3,  -8,  -10,  -10,  -6,  4,  -8,  4,  -10,  3,  4,  5,  -8,  -8,  -8,  -8,  3,  3,  -8,  -6,  -8,  -8,  -8,  -8,  -10,  -6,  -8,  3,  4,  -10,  3,  -6,  -8,  -8,  -6,  -6,  
+outcome score: 29
+avg. score: -4.1
 -----------------------------------------------
 Trying parameter set 4: 
-New match RandomPlayer vs. AiPlayer
-Turn 1: player A
-next move: 6
-Outcome: in progress
-Turn 2: player B
-Output: -14.0244  24.6246  -60.0866  -6.41756  7.45587  37.0864  7.81388  -53.6073  47.9704  --> best index: 8
-next move: 8
-Outcome: in progress
-Turn 3: player A
-next move: 2
-Outcome: in progress
-Turn 4: player B
-Output: -13.5439  17.9102  -47.9545  4.92812  1.16686  50.4706  20.766  -57.1038  38.4435  --> best index: 5
-next move: 5
-Outcome: in progress
-Turn 5: player A
-next move: 7
-Outcome: in progress
-Turn 6: player B
-Output: 11.3293  -2.51162  -23.4878  2.57486  -14.0057  18.5622  20.9798  -43.2373  12.177  --> best index: 6
-next move: 6
-Invalid move
-Score player B: -3
-New match AiPlayer vs. RandomPlayer
-Turn 1: player A
-Output: -6.65123  8.85308  -45.951  -7.74454  17.8203  28.0998  2.17548  -39.9923  61.3556  --> best index: 8
-next move: 8
-Outcome: in progress
-Turn 2: player B
-next move: 3
-Outcome: in progress
-Turn 3: player A
-Output: 19.3115  -6.46996  -9.87871  9.36754  -9.16633  29.2687  -6.49559  -19.4736  53.0269  --> best index: 8
-next move: 8
-Invalid move
-Score player A: -4
-New match AiPlayer vs. AiPlayer
-Turn 1: player A
-Output: -6.65123  8.85308  -45.951  -7.74454  17.8203  28.0998  2.17548  -39.9923  61.3556  --> best index: 8
-next move: 8
-Outcome: in progress
-Turn 2: player B
-Output: -0.366133  -2.62457  -27.6238  -7.29105  0.827987  43.6892  13.147  -38.4636  48.8205  --> best index: 8
-next move: 8
-Invalid move
-Score player B: -5
+#invalid: 80
+#lost: 20
+Scores: -4,  -8,  -8,  -4,  -6,  -4,  -2,  -6,  -8,  -6,  -8,  4,  -6,  4,  -8,  -8,  -8,  -4,  -4,  -6,  4,  -4,  -4,  -8,  -4,  -4,  -6,  -4,  -4,  -8,  -6,  -8,  -6,  -4,  -6,  -8,  -8,  -8,  -4,  -4,  -4,  -8,  -4,  -4,  -4,  -8,  -4,  -4,  -6,  -8,  -4,  -8,  3,  3,  -8,  -8,  -8,  3,  -8,  3,  -6,  3,  3,  -6,  3,  -6,  -8,  3,  3,  -8,  -8,  -6,  -6,  -6,  3,  -8,  -8,  -6,  3,  -8,  -6,  -8,  -6,  -8,  -8,  -8,  -8,  3,  3,  -6,  -8,  -8,  -8,  3,  -6,  4,  3,  -8,  -6,  3,  
+outcome score: 20
+avg. score: -4.42
 
-Best parameter set: 0 (avg. score: 2.33333)
+Best parameter set: 3, with score: 24.9

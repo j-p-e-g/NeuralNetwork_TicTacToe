@@ -79,7 +79,7 @@ namespace Game
     {
         sizeData.numOutputNodes = getBoardSize();
         sizeData.numInputNodes = 2 * sizeData.numOutputNodes;
-        sizeData.numHiddenNodes = std::vector<int>();
+        sizeData.numHiddenNodes = std::vector<int>({ 9 });
     }
 
     bool TicTacToeLogic::isValidMove(int playerId, int actionIndex) const

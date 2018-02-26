@@ -19,7 +19,7 @@ namespace Game
         : m_minParamValue(-10.f)
         , m_maxParamValue(10.f)
         , m_numParamSets(5)
-        , m_numMatches(10)
+        , m_numMatches(50)
     {
     }
 
@@ -77,17 +77,75 @@ namespace Game
         return true;
     }
 
-    void TicTacToeTrainer::addScore(const BasePlayer& player, double score)
+    void TicTacToeTrainer::addScore(const BasePlayer& player, double score, GameState playerGameState)
     {
         auto& found = m_scoreMap.find(player.getId());
         if (found == m_scoreMap.end())
         {
-            m_scoreMap.emplace(player.getId(), std::vector<double>({ score }));
+            ScoreSet scoreSet;
+            m_scoreMap.emplace(player.getId(), scoreSet);
+            found = m_scoreMap.find(player.getId());
         }
-        else
+
+        if (found != m_scoreMap.end())
         {
-            found->second.push_back(score);
+            switch (playerGameState)
+            {
+            case GS_GAMEOVER_WON:
+                found->second.wonCount++;
+                break;
+            case GS_GAMEOVER_LOST:
+                found->second.lostCount++;
+                break;
+            case GS_GAMEOVER_TIMEOUT:
+                found->second.tiedCount++;
+                break;
+            case GS_INVALID:
+                found->second.invalidCount++;
+                break;
+            default:
+                return;
+            }
+
+            found->second.scores.push_back(score);
         }
+    }
+
+    void TicTacToeTrainer::describeScoreForId(int id) const
+    {
+        auto& found = m_scoreMap.find(id);
+        if (found == m_scoreMap.end())
+        {
+            return;
+        }
+
+        std::ostringstream buffer;
+        if (found->second.invalidCount)
+        {
+            buffer << "#invalid: " << found->second.invalidCount << std::endl;
+        }
+        if (found->second.wonCount)
+        {
+            buffer << "#won: " << found->second.wonCount << std::endl;
+        }
+        if (found->second.lostCount)
+        {
+            buffer << "#lost: " << found->second.lostCount << std::endl;
+        }
+        if (found->second.tiedCount)
+        {
+            buffer << "#tied: " << found->second.tiedCount << std::endl;
+        }
+
+        buffer << "Scores: ";
+        for (auto score : found->second.scores)
+        {
+            buffer << score << ",  ";
+        }
+
+        buffer << std::endl << "outcome score: " << getOutcomeRatioScoreForId(id);
+        buffer << std::endl << "avg. score: " << getAverageScoreForId(id);
+        PRINT_LOG(buffer);
     }
 
     double TicTacToeTrainer::getAverageScoreForId(int id) const
@@ -97,13 +155,33 @@ namespace Game
         const auto& found = m_scoreMap.find(id);
         if (found != m_scoreMap.end())
         {
-            assert(!found->second.empty());
-            for (const auto& val : found->second)
+            assert(!found->second.scores.empty());
+            for (const auto& val : found->second.scores)
             {
                 score += val;
             }
 
-            score /= found->second.size();
+            score /= found->second.scores.size();
+        }
+
+        return score;
+    }
+
+    double TicTacToeTrainer::getOutcomeRatioScoreForId(int id) const
+    {
+        double score = 0.0;
+
+        const auto& found = m_scoreMap.find(id);
+        if (found != m_scoreMap.end())
+        {
+            const int totalCount = found->second.invalidCount + found->second.lostCount + found->second.tiedCount + found->second.wonCount;
+            assert(totalCount > 0);
+            assert(found->second.scores.size() == totalCount);
+
+            const double quotaValid = 1 - (double)found->second.invalidCount / totalCount;
+            const double quotaWon = (double)found->second.wonCount / totalCount;
+            const double quotaTied = (double)found->second.tiedCount / totalCount;
+            score = 100 * quotaValid + 10 * quotaWon + quotaTied;
         }
 
         return score;
@@ -117,8 +195,6 @@ namespace Game
             PRINT_ERROR("Failed to setup TicTacToeTrainer!");
             return;
         }
-
-        RandomPlayer randomPlayer(-1);
 
         std::ostringstream buffer;
         for (int k = 0; k < m_numParamSets; k++)
@@ -134,21 +210,50 @@ namespace Game
             m_paramManager->getParamSetForId(k, pset);
             m_nodeNetwork->assignParameters(pset.params);
 
-            AiPlayer aiPlayer(k, m_nodeNetwork);
+            {
+                // play N matches with the AI as the first player
+                AiPlayer aiPlayer(k, CellState::CS_PLAYER1, m_nodeNetwork);
+                SemiRandomPlayer randomPlayer(-1, CellState::CS_PLAYER2);
 
-            // try playing both as the first and the second player
-            playMatch(randomPlayer, aiPlayer);
-            playMatch(aiPlayer, randomPlayer);
+                for (int k = 0; k < m_numMatches; k++)
+                {
+                    playMatch(aiPlayer, randomPlayer);
+                }
+            }
 
-            // also play against yourself
-            playMatch(aiPlayer, aiPlayer);
-        }
+            {
+                // play N matches with the AI as the second player
+                SemiRandomPlayer randomPlayer(-1, CellState::CS_PLAYER1);
+                AiPlayer aiPlayer(k, CellState::CS_PLAYER2, m_nodeNetwork);
 
-        // update all scores
-        for (int k = 0; k < m_numParamSets; k++)
-        {
-            double avgScore = getAverageScoreForId(k);
-            m_paramManager->setScore(k, avgScore);
+                for (int k = 0; k < m_numMatches; k++)
+                {
+                    playMatch(randomPlayer, aiPlayer);
+                }
+            }
+
+            // also play against the other ai players
+            //for (int m = 0; m < m_numParamSets; m++)
+            //{
+            //    ParamSet pset;
+            //    m_paramManager->getParamSetForId(m, pset);
+            //    m_nodeNetwork->assignParameters(pset.params);
+
+            //    AiPlayer secondAiPlayer(m, m_nodeNetwork);
+
+            //    playMatch(aiPlayer, secondAiPlayer);
+
+            //    if (k != m)
+            //    {
+            //        playMatch(secondAiPlayer, aiPlayer);
+            //    }
+            //}
+
+            describeScoreForId(k);
+
+            // update score
+            const double newScore = getOutcomeRatioScoreForId(k) + getAverageScoreForId(k);
+            m_paramManager->setScore(k, newScore);
         }
 
         m_paramManager->dumpDataToFile();
@@ -162,15 +267,15 @@ namespace Game
 
         buffer.clear();
         buffer.str("");
-        buffer << std::endl << "Best parameter set: " << bestSetIds[0] << " (avg. score: " << pset.score << ")";
+        buffer << std::endl << "Best parameter set: " << bestSetIds[0] << ", with score: " << pset.score;
         PRINT_LOG(buffer);
     }
 
     void TicTacToeTrainer::playMatch(BasePlayer& playerA, BasePlayer& playerB)
     {
-        std::ostringstream buffer;
-        buffer << "New match " << playerA.getPlayerType().c_str() << " vs. " << playerB.getPlayerType().c_str();
-        PRINT_LOG(buffer);
+        //std::ostringstream buffer;
+        //buffer << "New match " << playerA.getPlayerType().c_str() << " vs. " << playerB.getPlayerType().c_str();
+        //PRINT_LOG(buffer);
 
         // reset board
         m_gameLogic->initBoard();
@@ -182,10 +287,10 @@ namespace Game
         bool firstPlayerTurn = true;
         do
         {
-            buffer.clear();
-            buffer.str("");
-            buffer << "Turn " << turnCount << ": " << (firstPlayerTurn ? "player A" : "player B");
-            PRINT_LOG(buffer);
+            //buffer.clear();
+            //buffer.str("");
+            //buffer << "Turn " << turnCount << ": " << (firstPlayerTurn ? "player A" : "player B");
+            //PRINT_LOG(buffer);
 
             const GameState state = playOneTurn(firstPlayerTurn ? playerA : playerB, firstPlayerTurn);
             turnCount++;
@@ -205,6 +310,7 @@ namespace Game
                     lastStatePlayerB = state;
                 }
 
+                // flip win/loss for other player
                 if (lastStatePlayerA == GS_GAMEOVER_WON || lastStatePlayerB == GS_GAMEOVER_LOST)
                 {
                     lastStatePlayerA = GS_GAMEOVER_WON;
@@ -215,6 +321,13 @@ namespace Game
                     lastStatePlayerA = GS_GAMEOVER_LOST;
                     lastStatePlayerB = GS_GAMEOVER_WON;
                 }
+
+                // both players are tied
+                if (lastStatePlayerA == GS_GAMEOVER_TIMEOUT || lastStatePlayerB == GS_GAMEOVER_TIMEOUT)
+                {
+                    lastStatePlayerA = GS_GAMEOVER_TIMEOUT;
+                    lastStatePlayerB = GS_GAMEOVER_TIMEOUT;
+                }
             }
         }
         while (lastStatePlayerA == GS_ONGOING && lastStatePlayerB == GS_ONGOING);
@@ -224,12 +337,12 @@ namespace Game
             const int turnCountPlayerA = static_cast<int>(std::ceil((float)turnCount / 2));
             double scorePlayerA = computeMatchScore(playerA, turnCountPlayerA, lastStatePlayerA);
 
-            buffer.clear();
-            buffer.str("");
-            buffer << "Score player A: " << scorePlayerA;
-            PRINT_LOG(buffer);
+            //buffer.clear();
+            //buffer.str("");
+            //buffer << "Score player A: " << scorePlayerA;
+            //PRINT_LOG(buffer);
 
-            addScore(playerA, scorePlayerA);
+            addScore(playerA, scorePlayerA, lastStatePlayerA);
         }
 
         if (lastStatePlayerB != GS_ONGOING)
@@ -237,12 +350,12 @@ namespace Game
             const int turnCountPlayerB = static_cast<int>(std::floor((float)turnCount / 2));
             double scorePlayerB = computeMatchScore(playerB, turnCountPlayerB, lastStatePlayerB);
 
-            buffer.clear();
-            buffer.str("");
-            buffer << "Score player B: " << scorePlayerB;
-            PRINT_LOG(buffer);
+            //buffer.clear();
+            //buffer.str("");
+            //buffer << "Score player B: " << scorePlayerB;
+            //PRINT_LOG(buffer);
 
-            addScore(playerB, scorePlayerB);
+            addScore(playerB, scorePlayerB, lastStatePlayerB);
         }
     }
 
@@ -252,13 +365,13 @@ namespace Game
         m_gameLogic->getGameCells(gameCells);
         const int nextMove = player.decideMove(gameCells);
 
-        std::ostringstream buffer;
-        buffer << "next move: " << nextMove;
-        PRINT_LOG(buffer);
+        //std::ostringstream buffer;
+        //buffer << "next move: " << nextMove;
+        //PRINT_LOG(buffer);
 
         if (!m_gameLogic->isValidMove(0, nextMove))
         {
-            PRINT_LOG("Invalid move");
+            //PRINT_LOG("Invalid move");
             return GS_INVALID;
         }
 
@@ -266,39 +379,40 @@ namespace Game
 
         const GameState state = m_gameLogic->evaluateBoard();
 
-        buffer.clear();
-        buffer.str("");
-        buffer << "Outcome: " << GameLogic::getGameStateDescription(state).c_str();
-        PRINT_LOG(buffer);
+        //buffer.clear();
+        //buffer.str("");
+        //buffer << "Outcome: " << GameLogic::getGameStateDescription(state).c_str();
+        //PRINT_LOG(buffer);
 
         return state;
     }
 
     double TicTacToeTrainer::computeMatchScore(BasePlayer& player, int numTurns, GameState finalGameState)
     {
-        double score = 0.0;
-
         switch (finalGameState)
         {
         case GS_INVALID:
             // made an invalid move
             // the penalty is smaller the later this happens
-            score = numTurns - 6;
-            break;
+            // score between -10 and -2
+            return 2 * (numTurns - 6);
         case GS_ONGOING:
             // the other player made an invalid move
             break;
         case GS_GAMEOVER_LOST:
             // still much better than being stuck after an invalid move
             // the bonus is larger the later this happens
-            score += numTurns;
-            break;
+            // score between 1 and 5
+            return numTurns;
+        case GS_GAMEOVER_TIMEOUT:
+            // the game ended in a tie
+            return 10;
         case GS_GAMEOVER_WON:
             // the bonus is larger the earlier this happens
-            score += (6 - numTurns) + 10;
-            break;
+            // score between 11 and 15
+            return (6 - numTurns) + 10;
         }
 
-        return score;
+        return 0;
     }
 }

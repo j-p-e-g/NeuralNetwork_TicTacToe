@@ -214,7 +214,7 @@ namespace NeuralNetwork
         buffer << std::endl << "  #hidden layer nodes: ";
         for (unsigned int k = 1; k < m_layers.size() - 1; k++)
         {
-            if (k > 0)
+            if (k > 1)
             {
                 buffer << ", ";
             }

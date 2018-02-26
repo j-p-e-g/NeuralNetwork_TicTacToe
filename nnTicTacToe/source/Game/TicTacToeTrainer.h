@@ -9,6 +9,16 @@
 
 namespace Game
 {
+    struct ScoreSet
+    {
+        int invalidCount = 0;
+        int wonCount = 0;
+        int lostCount = 0;
+        int tiedCount = 0;
+
+        std::vector<double> scores;
+    };
+
     class TicTacToeTrainer
     {
     public:
@@ -21,11 +31,13 @@ namespace Game
 
     private:
         void describeTrainer() const;
+        void describeScoreForId(int id) const;
         void playMatch(BasePlayer& playerA, BasePlayer& playerB);
         GameState playOneTurn(BasePlayer& player, bool firstPlayer);
         double computeMatchScore(BasePlayer& player, int numTurns, GameState finalGameState);
-        void addScore(const BasePlayer& player, double score);
+        void addScore(const BasePlayer& player, double score, GameState playerGameState);
         double getAverageScoreForId(int id) const;
+        double getOutcomeRatioScoreForId(int id) const;
 
     private:
         bool m_initialized = false;
@@ -38,6 +50,6 @@ namespace Game
         std::shared_ptr<TicTacToeLogic> m_gameLogic;
         std::shared_ptr<NeuralNetwork::ParameterManager> m_paramManager;
         std::shared_ptr<NeuralNetwork::NodeNetwork> m_nodeNetwork;
-        std::map<int, std::vector<double>> m_scoreMap;
+        std::map<int, ScoreSet> m_scoreMap;
     };
 }

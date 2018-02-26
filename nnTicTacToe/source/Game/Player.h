@@ -11,12 +11,15 @@ namespace Game
     class BasePlayer
     {
     public:
-        BasePlayer(int id);
+        BasePlayer(int id, CellState player);
 
     public:
         int getId() const { return m_id; }
         virtual std::string getPlayerType() const = 0;
         virtual int decideMove(const std::vector<CellState>& gameCells) = 0;
+
+    protected:
+        CellState m_player;
 
     private:
         int m_id;
@@ -26,7 +29,7 @@ namespace Game
         : public BasePlayer
     {
     public:
-        RandomPlayer(int id);
+        RandomPlayer(int id, CellState player);
 
     public:
         std::string getPlayerType() const override { return "RandomPlayer"; }
@@ -38,12 +41,32 @@ namespace Game
         std::mt19937 m_mt;
     };
 
+    class SemiRandomPlayer
+        : public RandomPlayer
+    {
+    public:
+        SemiRandomPlayer(int id, CellState player);
+
+    public:
+        std::string getPlayerType() const override { return "SemiRandomPlayer"; }
+
+        /// pick a random non-occupied cell
+        int decideMove(const std::vector<CellState>& gameCells) override;
+
+    public:
+        void getTripleCandidates(const std::vector<CellState>& gameCells, CellState targeState, std::vector<int>& candidates) const;
+        int getTripleCandidate(const std::vector<CellState>& gameCells, CellState targeState, int idx1, int idx2, int idx3) const;
+
+    private:
+        std::mt19937 m_mt;
+    };
+
     class AiPlayer
         : public BasePlayer
     {
     public:
         AiPlayer() = delete;
-        AiPlayer(int id, std::shared_ptr<NeuralNetwork::NodeNetwork>& network);
+        AiPlayer(int id, CellState player, std::shared_ptr<NeuralNetwork::NodeNetwork>& network);
 
     public:
         std::string getPlayerType() const override { return "AiPlayer"; }
