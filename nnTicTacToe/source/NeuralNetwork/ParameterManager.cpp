@@ -13,7 +13,8 @@ namespace NeuralNetwork
     using namespace FileIO;
     using json = nlohmann::json;
 
-    const std::string DATA_FILE_NAME = "data/values.json";
+    const std::string DATA_FILE_NAME = "values.json";
+    const std::string TEST_FILE_NAME = "test.json";
 
     ParameterManager::ParameterManager(const ParameterManagerData pmData)
         : m_paramData(pmData)

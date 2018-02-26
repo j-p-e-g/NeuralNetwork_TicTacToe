@@ -28,6 +28,7 @@ namespace NeuralNetwork
 
         virtual bool computeValues() = 0;
         virtual int getOutputValues(std::vector<double>& outputValues) const = 0;
+        virtual void describeNetwork() const = 0;
     };
 
     class NodeNetwork
@@ -48,8 +49,8 @@ namespace NeuralNetwork
         int getOutputValues(std::vector<double>& outputValues) const override;
 
     public:
-
         int getNumParameters() const;
+        void describeNetwork() const override;
 
     private:
         Layer addInnerLayer(int numNodes, const Layer& previousLayer);

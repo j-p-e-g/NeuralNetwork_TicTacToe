@@ -3,10 +3,12 @@
 #include <assert.h>
 #include <iostream>
 
+#include "FileIO/FileManager.h"
 #include "Player.h"
 
 namespace Game
 {
+    using namespace FileIO;
     using namespace NeuralNetwork;
 
     BasePlayer::BasePlayer(int id)
@@ -62,13 +64,15 @@ namespace Game
         std::vector<double> outputValues;
         int bestResult = m_nodeNetwork->getOutputValues(outputValues);
 
-        std::cout << "Output: ";
+        std::ostringstream buffer;
+        buffer << "Output: ";
         for (auto val : outputValues)
         {
-            std::cout << val << "  ";
+            buffer << val << "  ";
         }
 
-        std::cout << "--> best index: " << bestResult << std::endl;
+        buffer << "--> best index: " << bestResult;
+        PRINT_LOG(buffer);
 
         return bestResult;
     }

@@ -5,12 +5,14 @@
 
 #include "TicTacToeTrainer.h"
 
+#include "FileIO/FileManager.h"
 #include "GameLogic.h"
 #include "NeuralNetwork/NodeNetwork.h"
 #include "NeuralNetwork/ParameterManager.h"
 
 namespace Game
 {
+    using namespace FileIO;
     using namespace NeuralNetwork;
 
     TicTacToeTrainer::TicTacToeTrainer()
@@ -29,8 +31,21 @@ namespace Game
         }
     }
 
+    void TicTacToeTrainer::describeTrainer() const
+    {
+        std::ostringstream buffer;
+        buffer << "TicTacToeTrainer: ";
+        buffer << std::endl << "  #paramSets: " << m_numParamSets;
+        buffer << std::endl << "  #matches: " << m_numMatches;
+        buffer << std::endl << "  random param values picked within [" << m_minParamValue << ", " << m_maxParamValue << "]";
+        buffer << std::endl;
+        PRINT_LOG(buffer);
+    }
+
     bool TicTacToeTrainer::setup()
     {
+        describeTrainer();
+
         m_gameLogic = std::make_shared<TicTacToeLogic>();
 
         NetworkSizeData sizeData;
@@ -39,7 +54,7 @@ namespace Game
         m_nodeNetwork = std::make_shared<NodeNetwork>();
         if (!m_nodeNetwork->createNetwork(sizeData))
         {
-            std::cerr << "Network creation failed!" << std::endl;
+            PRINT_ERROR("Network creation failed!");
             return false;
         }
 
@@ -96,18 +111,24 @@ namespace Game
 
     void TicTacToeTrainer::run()
     {
+        FileManager::clearLogFile();
         if (!setup())
         {
-            std::cerr << "Failed to setup TicTacToeTrainer!" << std::endl;
+            PRINT_ERROR("Failed to setup TicTacToeTrainer!");
             return;
         }
 
         RandomPlayer randomPlayer(-1);
 
+        std::ostringstream buffer;
         for (int k = 0; k < m_numParamSets; k++)
         {
             // reset network parameters
-            std::cout << std::endl << "Trying parameter set " << k << ": " << std::endl;
+            buffer.clear();
+            buffer.str("");
+            buffer << "-----------------------------------------------"
+                   << std::endl << "Trying parameter set " << k << ": ";
+            PRINT_LOG(buffer);
 
             ParamSet pset;
             m_paramManager->getParamSetForId(k, pset);
@@ -139,12 +160,17 @@ namespace Game
         ParamSet pset;
         m_paramManager->getParamSetForId(bestSetIds[0], pset);
 
-        std::cout << std::endl << "Best parameter set: " << bestSetIds[0] << " (avg. score: " << pset.score << ")" << std::endl;
+        buffer.clear();
+        buffer.str("");
+        buffer << std::endl << "Best parameter set: " << bestSetIds[0] << " (avg. score: " << pset.score << ")";
+        PRINT_LOG(buffer);
     }
 
     void TicTacToeTrainer::playMatch(BasePlayer& playerA, BasePlayer& playerB)
     {
-        std::cout << std::endl << "New match " << playerA.getPlayerType().c_str() << " vs. " << playerB.getPlayerType().c_str() << std::endl;
+        std::ostringstream buffer;
+        buffer << "New match " << playerA.getPlayerType().c_str() << " vs. " << playerB.getPlayerType().c_str();
+        PRINT_LOG(buffer);
 
         // reset board
         m_gameLogic->initBoard();
@@ -156,7 +182,10 @@ namespace Game
         bool firstPlayerTurn = true;
         do
         {
-            std::cout << "Turn " << turnCount << ": " << (firstPlayerTurn ? "player A" : "player B") << std::endl;
+            buffer.clear();
+            buffer.str("");
+            buffer << "Turn " << turnCount << ": " << (firstPlayerTurn ? "player A" : "player B");
+            PRINT_LOG(buffer);
 
             const GameState state = playOneTurn(firstPlayerTurn ? playerA : playerB, firstPlayerTurn);
             turnCount++;
@@ -194,7 +223,12 @@ namespace Game
         {
             const int turnCountPlayerA = static_cast<int>(std::ceil((float)turnCount / 2));
             double scorePlayerA = computeMatchScore(playerA, turnCountPlayerA, lastStatePlayerA);
-            std::cout << "Score player A: " << scorePlayerA << std::endl;
+
+            buffer.clear();
+            buffer.str("");
+            buffer << "Score player A: " << scorePlayerA;
+            PRINT_LOG(buffer);
+
             addScore(playerA, scorePlayerA);
         }
 
@@ -202,7 +236,12 @@ namespace Game
         {
             const int turnCountPlayerB = static_cast<int>(std::floor((float)turnCount / 2));
             double scorePlayerB = computeMatchScore(playerB, turnCountPlayerB, lastStatePlayerB);
-            std::cout << "Score player B: " << scorePlayerB << std::endl;
+
+            buffer.clear();
+            buffer.str("");
+            buffer << "Score player B: " << scorePlayerB;
+            PRINT_LOG(buffer);
+
             addScore(playerB, scorePlayerB);
         }
     }
@@ -212,18 +251,25 @@ namespace Game
         std::vector<CellState> gameCells;
         m_gameLogic->getGameCells(gameCells);
         const int nextMove = player.decideMove(gameCells);
-        std::cout << "next move: " << nextMove << std::endl;
+
+        std::ostringstream buffer;
+        buffer << "next move: " << nextMove;
+        PRINT_LOG(buffer);
 
         if (!m_gameLogic->isValidMove(0, nextMove))
         {
-            std::cerr << "Invalid move" << std::endl;
+            PRINT_LOG("Invalid move");
             return GS_INVALID;
         }
 
         m_gameLogic->applyMove(firstPlayer ? 0 : 1, nextMove);
 
         const GameState state = m_gameLogic->evaluateBoard();
-        std::cout << "Outcome: " << GameLogic::getGameStateDescription(state).c_str() << std::endl;
+
+        buffer.clear();
+        buffer.str("");
+        buffer << "Outcome: " << GameLogic::getGameStateDescription(state).c_str();
+        PRINT_LOG(buffer);
 
         return state;
     }

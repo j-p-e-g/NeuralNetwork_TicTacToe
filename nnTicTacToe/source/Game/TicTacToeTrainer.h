@@ -20,6 +20,7 @@ namespace Game
         void run();
 
     private:
+        void describeTrainer() const;
         void playMatch(BasePlayer& playerA, BasePlayer& playerB);
         GameState playOneTurn(BasePlayer& player, bool firstPlayer);
         double computeMatchScore(BasePlayer& player, int numTurns, GameState finalGameState);

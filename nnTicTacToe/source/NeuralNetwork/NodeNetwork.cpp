@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include "FileIO/FileManager.h"
 #include "NodeNetwork.h"
 
 #include <assert.h> 
@@ -7,6 +8,8 @@
 
 namespace NeuralNetwork
 {
+    using namespace FileIO;
+
     // --------------------------
     // NodeNetwork
     // --------------------------
@@ -29,11 +32,12 @@ namespace NeuralNetwork
     {
         if (sizeData.numInputNodes <= 0 || sizeData.numOutputNodes <= 0)
         {
-            std::cerr << "Network needs at least one input and one output node (passed " << sizeData.numInputNodes
-                << " input node(s) and " << sizeData.numOutputNodes << " output node(s))" << std::endl;
+            std::ostringstream buffer;
+            buffer << "Network needs at least one input and one output node (passed " << sizeData.numInputNodes
+                    << " input node(s) and " << sizeData.numOutputNodes << " output node(s))";
+            PRINT_ERROR(buffer);
             return false;
         }
-
         destroyNetwork();
 
         Layer prevLayer; // initially empty
@@ -49,7 +53,7 @@ namespace NeuralNetwork
         {
             if (nh <= 0)
             {
-                std::cerr << "Each hidden layer needs at least one node" << std::endl;
+                PRINT_ERROR("Each hidden layer needs at least one node");
                 return false;
             }
 
@@ -57,6 +61,7 @@ namespace NeuralNetwork
         }
 
         addInnerLayer(sizeData.numOutputNodes, prevLayer);
+        describeNetwork();
 
         return true;
     }
@@ -108,7 +113,9 @@ namespace NeuralNetwork
         Layer& inputLayer = m_layers[0];
         if (inputLayer.size() != inputValues.size())
         {
-            std::cerr << "Mismatch between number of input values (" << inputValues.size() << ") and input nodes (" << inputLayer.size() << ")!" << std::endl;
+            std::ostringstream buffer;
+            buffer << "Mismatch between number of input values (" << inputValues.size() << ") and input nodes (" << inputLayer.size() << ")!";
+            PRINT_ERROR(buffer);
             return false;
         }
 
@@ -136,7 +143,9 @@ namespace NeuralNetwork
         const size_t expectedParameters = getNumParameters();
         if (expectedParameters != params.size())
         {
-            std::cerr << "Unexpected number of parameters passed into network: " << params.size() << " (expected " << expectedParameters << ")" << std::endl;
+            std::ostringstream buffer;
+            buffer << "Unexpected number of parameters passed into network: " << params.size() << " (expected " << expectedParameters << ")";
+            PRINT_ERROR(buffer);
             return false;
         }
 
@@ -189,5 +198,32 @@ namespace NeuralNetwork
         }
 
         return bestIndex;
+    }
+
+    void NodeNetwork::describeNetwork() const
+    {
+        assert(m_layers.size() >= 2);
+
+        std::ostringstream buffer;
+        buffer << "NodeNetwork: ";
+        buffer << std::endl << "  #layers: " << m_layers.size();
+        
+        buffer << std::endl << "  #input nodes: " << m_layers[0].size();
+        buffer << std::endl << "  #output nodes: " << m_layers[m_layers.size()-1].size();
+
+        buffer << std::endl << "  #hidden layer nodes: ";
+        for (unsigned int k = 1; k < m_layers.size() - 1; k++)
+        {
+            if (k > 0)
+            {
+                buffer << ", ";
+            }
+
+            buffer << m_layers[k].size();
+        }
+
+        buffer << std::endl << "  #parameters: " << getNumParameters() << std::endl;
+
+        PRINT_LOG(buffer);
     }
 }
