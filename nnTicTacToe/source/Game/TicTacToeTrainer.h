@@ -29,6 +29,8 @@ namespace Game
         bool setup();
         void run();
 
+        void handleTrainingIteration(bool requiresFurtherEvolution);
+
     private:
         void describeTrainer() const;
         void describeScoreForId(int id) const;
@@ -38,12 +40,14 @@ namespace Game
         void addScore(const BasePlayer& player, double score, GameState playerGameState);
         double getAverageScoreForId(int id) const;
         double getOutcomeRatioScoreForId(int id) const;
+        void handleParamSetEvolution();
 
     private:
         bool m_initialized = false;
 
         double m_minParamValue;
         double m_maxParamValue;
+        int m_numIterations = 1;
         int m_numParamSets = 1;
         int m_numMatches = 1;
 

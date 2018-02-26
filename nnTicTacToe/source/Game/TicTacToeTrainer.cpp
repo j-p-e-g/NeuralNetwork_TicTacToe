@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include <assert.h> 
+#include <chrono>
 #include <iostream>
 
 #include "TicTacToeTrainer.h"
@@ -18,8 +19,9 @@ namespace Game
     TicTacToeTrainer::TicTacToeTrainer()
         : m_minParamValue(-10.f)
         , m_maxParamValue(10.f)
-        , m_numParamSets(5)
-        , m_numMatches(50)
+        , m_numParamSets(20)
+        , m_numIterations(100)
+        , m_numMatches(100)
     {
     }
 
@@ -50,6 +52,7 @@ namespace Game
 
         NetworkSizeData sizeData;
         m_gameLogic->getRequiredNetworkSize(sizeData);
+        sizeData.numHiddenNodes = std::vector<int>({ 9, 9 });
 
         m_nodeNetwork = std::make_shared<NodeNetwork>();
         if (!m_nodeNetwork->createNetwork(sizeData))
@@ -189,6 +192,8 @@ namespace Game
 
     void TicTacToeTrainer::run()
     {
+        const auto processStart = std::chrono::high_resolution_clock::now();
+
         FileManager::clearLogFile();
         if (!setup())
         {
@@ -196,23 +201,56 @@ namespace Game
             return;
         }
 
+        for (int i = 0; i < m_numIterations; i++)
+        {
+            std::cout << "training iteration " << i << std::endl;
+            const bool requiresFurtherEvolution = (i < m_numIterations - 1);
+            handleTrainingIteration(requiresFurtherEvolution);
+        }
+
+        const auto processEnd = std::chrono::high_resolution_clock::now();
+        const std::chrono::duration<double> elapsedSeconds = processEnd - processStart;
+
         std::ostringstream buffer;
-        for (int k = 0; k < m_numParamSets; k++)
+        buffer << "Time taken: " << elapsedSeconds.count() << " seconds";
+        std::cout << buffer.str();
+        PRINT_LOG(buffer);
+
+        m_paramManager->dumpDataToFile();
+    }
+
+    void TicTacToeTrainer::handleTrainingIteration(bool requiresFurtherEvolution)
+    {
+        std::ostringstream buffer;
+
+        std::vector<int> currentIds;
+        m_paramManager->getActiveParameterSetIds(currentIds);
+
+        for (auto id : currentIds)
         {
             // reset network parameters
             buffer.clear();
             buffer.str("");
             buffer << "-----------------------------------------------"
-                   << std::endl << "Trying parameter set " << k << ": ";
+                   << std::endl << "Trying parameter set " << id << ": ";
             PRINT_LOG(buffer);
 
             ParamSet pset;
-            m_paramManager->getParamSetForId(k, pset);
+            m_paramManager->getParamSetForId(id, pset);
+
+            if (pset.score != 0)
+            {
+                // skip parameter sets for which we already have a score from the previous run
+                // but print the previous score again for convenience
+                describeScoreForId(id);
+                continue;
+            }
+
             m_nodeNetwork->assignParameters(pset.params);
 
             {
                 // play N matches with the AI as the first player
-                AiPlayer aiPlayer(k, CellState::CS_PLAYER1, m_nodeNetwork);
+                AiPlayer aiPlayer(id, CellState::CS_PLAYER1, m_nodeNetwork);
                 SemiRandomPlayer randomPlayer(-1, CellState::CS_PLAYER2);
 
                 for (int k = 0; k < m_numMatches; k++)
@@ -224,7 +262,7 @@ namespace Game
             {
                 // play N matches with the AI as the second player
                 SemiRandomPlayer randomPlayer(-1, CellState::CS_PLAYER1);
-                AiPlayer aiPlayer(k, CellState::CS_PLAYER2, m_nodeNetwork);
+                AiPlayer aiPlayer(id, CellState::CS_PLAYER2, m_nodeNetwork);
 
                 for (int k = 0; k < m_numMatches; k++)
                 {
@@ -232,28 +270,11 @@ namespace Game
                 }
             }
 
-            // also play against the other ai players
-            //for (int m = 0; m < m_numParamSets; m++)
-            //{
-            //    ParamSet pset;
-            //    m_paramManager->getParamSetForId(m, pset);
-            //    m_nodeNetwork->assignParameters(pset.params);
-
-            //    AiPlayer secondAiPlayer(m, m_nodeNetwork);
-
-            //    playMatch(aiPlayer, secondAiPlayer);
-
-            //    if (k != m)
-            //    {
-            //        playMatch(secondAiPlayer, aiPlayer);
-            //    }
-            //}
-
-            describeScoreForId(k);
+            describeScoreForId(id);
 
             // update score
-            const double newScore = getOutcomeRatioScoreForId(k) + getAverageScoreForId(k);
-            m_paramManager->setScore(k, newScore);
+            const double newScore = getOutcomeRatioScoreForId(id) + getAverageScoreForId(id);
+            m_paramManager->setScore(id, newScore);
         }
 
         m_paramManager->dumpDataToFile();
@@ -269,6 +290,11 @@ namespace Game
         buffer.str("");
         buffer << std::endl << "Best parameter set: " << bestSetIds[0] << ", with score: " << pset.score;
         PRINT_LOG(buffer);
+
+        if (requiresFurtherEvolution)
+        {
+            handleParamSetEvolution();
+        }
     }
 
     void TicTacToeTrainer::playMatch(BasePlayer& playerA, BasePlayer& playerB)
@@ -415,4 +441,37 @@ namespace Game
 
         return 0;
     }
+
+    void TicTacToeTrainer::handleParamSetEvolution()
+    {
+        std::ostringstream buffer;
+
+        std::vector<int> newParameterSetIds;
+        if (!m_paramManager->evolveParameterSets(m_numParamSets, newParameterSetIds))
+        {
+            buffer.clear();
+            buffer.str("");
+            buffer << "Parameter evolution failed!";
+            PRINT_ERROR(buffer);
+            return;
+        }
+
+        std::vector<int> currentParameterSetIds;
+        m_paramManager->getActiveParameterSetIds(currentParameterSetIds);
+
+        for (auto id : currentParameterSetIds)
+        {
+            if (std::find(newParameterSetIds.begin(), newParameterSetIds.end(), id) == newParameterSetIds.end())
+            {
+                buffer.clear();
+                buffer.str("");
+                buffer << "Disabling parameter set " << id;
+                PRINT_LOG(buffer);
+
+                m_paramManager->setParameterSetActive(id, false);
+                //m_paramManager->removeParameterSetForId(id);
+            }
+        }
+    }
+
 }

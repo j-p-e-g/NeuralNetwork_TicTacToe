@@ -20,14 +20,14 @@ enum CellState
 
 struct NetworkSizeData
 {
-    int numInputNodes;
-    int numOutputNodes;
+    int numInputNodes = 1;
+    int numOutputNodes = 1;
     std::vector<int> numHiddenNodes;
 };
 
 struct ParameterManagerData
 {
-    int numParams;
-    double minValue;
-    double maxValue;
+    int numParams = 1;
+    double minValue = -1;
+    double maxValue = 1;
 };
