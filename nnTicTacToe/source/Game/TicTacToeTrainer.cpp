@@ -4,6 +4,8 @@
 #include <chrono>
 #include <iostream>
 
+#include "3rdparty/json/json.hpp"
+
 #include "TicTacToeTrainer.h"
 
 #include "FileIO/FileManager.h"
@@ -15,15 +17,9 @@ namespace Game
 {
     using namespace FileIO;
     using namespace NeuralNetwork;
+    using json = nlohmann::json;
 
-    TicTacToeTrainer::TicTacToeTrainer()
-        : m_minParamValue(-10.f)
-        , m_maxParamValue(10.f)
-        , m_numParamSets(20)
-        , m_numIterations(100)
-        , m_numMatches(100)
-    {
-    }
+    const std::string CONFIG_FILE_NAME = "configs.json";
 
     TicTacToeTrainer::~TicTacToeTrainer()
     {
@@ -33,26 +29,65 @@ namespace Game
         }
     }
 
+    bool TicTacToeTrainer::readConfigValues()
+    {
+        json j;
+
+        if (!FileManager::readJsonFromFile(CONFIG_FILE_NAME, j))
+        {
+            return false;
+        }
+
+        if (!j.is_object())
+        {
+            return false;
+        }
+
+        m_paramData.minRandomParamValue = j.at("min_random_parameter").get<double>();
+        m_paramData.maxRandomParamValue = j.at("max_random_parameter").get<double>();
+        m_paramData.mutationChance = j.at("mutation_chance").get<double>();
+        m_paramData.numBestSetsKeptDuringEvolution = j.at("num_best_sets_kept_during_evolution").get<int>();
+        m_paramData.numAddedRandomSetsDuringEvolution = j.at("num_random_sets_added_during_evolution").get<int>();
+
+        m_numParamSets = j.at("num_param_sets").get<int>();
+        m_numIterations = j.at("num_iterations").get<int>();
+        m_numMatches = j.at("num_matches").get<int>();
+
+        const auto& vec = j.at("num_hidden_nodes");
+        for (json::const_iterator it = vec.begin(); it != vec.end(); ++it)
+        {
+            m_numHiddenNodes.push_back(*it);
+        }
+
+        return true;
+    }
+
     void TicTacToeTrainer::describeTrainer() const
     {
         std::ostringstream buffer;
         buffer << "TicTacToeTrainer: ";
         buffer << std::endl << "  #paramSets: " << m_numParamSets;
         buffer << std::endl << "  #matches: " << m_numMatches;
-        buffer << std::endl << "  random param values picked within [" << m_minParamValue << ", " << m_maxParamValue << "]";
+        buffer << std::endl << "  #iterations: " << m_numIterations;
         buffer << std::endl;
         PRINT_LOG(buffer);
     }
 
     bool TicTacToeTrainer::setup()
     {
+        if (!readConfigValues())
+        {
+            PRINT_ERROR("Failed to read config values");
+        }
+
         describeTrainer();
 
         m_gameLogic = std::make_shared<TicTacToeLogic>();
 
+        // setup network
         NetworkSizeData sizeData;
         m_gameLogic->getRequiredNetworkSize(sizeData);
-        sizeData.numHiddenNodes = std::vector<int>({ 9, 9 });
+        sizeData.numHiddenNodes = m_numHiddenNodes;
 
         m_nodeNetwork = std::make_shared<NodeNetwork>();
         if (!m_nodeNetwork->createNetwork(sizeData))
@@ -61,12 +96,10 @@ namespace Game
             return false;
         }
 
-        ParameterManagerData pmData;
-        pmData.numParams = m_nodeNetwork->getNumParameters();
-        pmData.minValue = m_minParamValue;
-        pmData.maxValue = m_maxParamValue;
-
-        m_paramManager = std::make_shared<ParameterManager>(pmData);
+        // setup parameter manager
+        m_paramData.numParams = m_nodeNetwork->getNumParameters();
+        m_paramManager = std::make_shared<ParameterManager>(m_paramData);
+        m_paramManager->describeParameterManager();
 
         // create N different parameter sets
         for (int k = 0; k < m_numParamSets; k++)

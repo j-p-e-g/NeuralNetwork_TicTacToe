@@ -1,0 +1,14 @@
+{
+    "num_param_sets": 20,
+    "num_iterations": 100,
+    "num_matches": 100,
+    "num_hidden_nodes": [
+        9,
+        9
+    ],
+    "min_random_parameter": -10,
+    "max_random_parameter": 10,
+    "num_best_sets_kept_during_evolution": 2,
+    "num_random_sets_added_during_evolution": 1,
+    "mutation_chance": 0.02
+}

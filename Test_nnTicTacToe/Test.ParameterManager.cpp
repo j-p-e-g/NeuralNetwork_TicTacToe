@@ -19,8 +19,8 @@ namespace ParameterManagerTest
         {
             ParameterManagerData data;
             data.numParams = 10;
-            data.minValue = -2;
-            data.maxValue = 5;
+            data.minRandomParamValue = -2;
+            data.maxRandomParamValue = 5;
 
             ParameterManager pm(data);
 
@@ -33,8 +33,8 @@ namespace ParameterManagerTest
             std::set<double> uniqueParams;
             for (const auto& val : params)
             {
-                Assert::AreEqual(true, val >= data.minValue);
-                Assert::AreEqual(true, val <= data.maxValue);
+                Assert::AreEqual(true, val >= data.minRandomParamValue);
+                Assert::AreEqual(true, val <= data.maxRandomParamValue);
 
                 uniqueParams.emplace(val);
             }
@@ -48,8 +48,8 @@ namespace ParameterManagerTest
         {
             ParameterManagerData data;
             data.numParams = 2;
-            data.minValue = -1.0;
-            data.maxValue = 1.0;
+            data.minRandomParamValue = -1.0;
+            data.maxRandomParamValue = 1.0;
 
             ParameterManager pm(data);
 
@@ -73,8 +73,8 @@ namespace ParameterManagerTest
         {
             ParameterManagerData data;
             data.numParams = 3;
-            data.minValue = 1;
-            data.maxValue = 2;
+            data.minRandomParamValue = 1;
+            data.maxRandomParamValue = 2;
 
             ParameterManager pm(data);
 
@@ -101,8 +101,8 @@ namespace ParameterManagerTest
         {
             ParameterManagerData data;
             data.numParams = 3;
-            data.minValue = 0;
-            data.maxValue = 10;
+            data.minRandomParamValue = 0;
+            data.maxRandomParamValue = 10;
 
             ParameterManager pm(data);
 
@@ -146,8 +146,8 @@ namespace ParameterManagerTest
         {
             ParameterManagerData data;
             data.numParams = 4;
-            data.minValue = -5;
-            data.maxValue = 5;
+            data.minRandomParamValue = -5;
+            data.maxRandomParamValue = 5;
 
             ParameterManager pm(data);
 
@@ -221,8 +221,8 @@ namespace ParameterManagerTest
 
             ParameterManagerData data;
             data.numParams = 10;
-            data.minValue = -0.5;
-            data.maxValue = 0.5;
+            data.minRandomParamValue = -0.5;
+            data.maxRandomParamValue = 0.5;
 
             ParameterManager pm(data);
             pm.addNewParamSet(ps1);
@@ -268,8 +268,8 @@ namespace ParameterManagerTest
         {
             ParameterManagerData data;
             data.numParams = 2;
-            data.minValue = 0;
-            data.maxValue = 5;
+            data.minRandomParamValue = 0;
+            data.maxRandomParamValue = 5;
 
             ParameterManager pm(data);
 

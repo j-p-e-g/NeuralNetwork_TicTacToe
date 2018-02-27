@@ -9,7 +9,7 @@ namespace FileIO
 {
     using json = nlohmann::json;
 
-    const int MAX_FIND_FILE_ATTEMPTS = 3;
+    const int MAX_NESTED_PATH_LOOKUP_ATTEMPTS = 3;
     const std::string DATA_PATH = "data/";
     const std::string LOGFILE_NAME = "logfile.txt";
     
@@ -93,7 +93,7 @@ namespace FileIO
     {
         relativePath = filePath;
 
-        for (int k = 0; k < MAX_FIND_FILE_ATTEMPTS; k++)
+        for (int k = 0; k < MAX_NESTED_PATH_LOOKUP_ATTEMPTS; k++)
         {
             if (fileExists(relativePath))
             {

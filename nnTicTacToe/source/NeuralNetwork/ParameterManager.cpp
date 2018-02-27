@@ -15,12 +15,24 @@ namespace NeuralNetwork
 
     const std::string DATA_FILE_NAME = "values.json";
     const std::string TEST_FILE_NAME = "test.json";
-    const double MUTATION_CHANCE = 0.05;
 
     ParameterManager::ParameterManager(const ParameterManagerData pmData)
         : m_paramData(pmData)
         , m_nextId(0)
     {
+    }
+
+    void ParameterManager::describeParameterManager() const
+    {
+        std::ostringstream buffer;
+        buffer << "ParameterManager: ";
+        buffer << std::endl << "  #parameters: " << m_paramData.numParams;
+        buffer << std::endl << "  random param values picked within [" << m_paramData.minRandomParamValue << ", " << m_paramData.maxRandomParamValue << "]";
+        buffer << std::endl << "  mutation chance during evolution: " << m_paramData.mutationChance;
+        buffer << std::endl << "  number of best sets kept during evolution: " << m_paramData.numBestSetsKeptDuringEvolution;
+        buffer << std::endl << "  number of random sets added during evolution: " << m_paramData.numAddedRandomSetsDuringEvolution;
+        buffer << std::endl;
+        PRINT_LOG(buffer);
     }
 
     bool ParameterManager::readDataFromFile()
@@ -95,7 +107,7 @@ namespace NeuralNetwork
 
         std::random_device rd;
         std::mt19937 gen(rd());
-        std::uniform_real_distribution<double> rndDist(m_paramData.minValue, std::nextafter(m_paramData.maxValue, DBL_MAX));
+        std::uniform_real_distribution<double> rndDist(m_paramData.minRandomParamValue, std::nextafter(m_paramData.maxRandomParamValue, DBL_MAX));
 
         for (int k = 0; k < m_paramData.numParams; k++)
         {
@@ -208,18 +220,17 @@ namespace NeuralNetwork
         fillParameterSetProbabilityMap(probabilityMap);
         assert(probabilityMap.size() > 1);
 
-        // keep best 10% of current sets
-        const int tenPercentAmount = std::max(1, static_cast<int>((double)totalNumberOfSets / 10));
-        assert(2 * tenPercentAmount < totalNumberOfSets);
+        assert(m_paramData.numBestSetsKeptDuringEvolution + m_paramData.numAddedRandomSetsDuringEvolution < totalNumberOfSets);
 
-        for (int k = 0; k < tenPercentAmount; k++)
+        // keep best parameter sets
+        for (int k = 0; k < m_paramData.numBestSetsKeptDuringEvolution; k++)
         {
             buffer << std::endl << "Keeping best set " << bestParameterSetIds[k];
             newParameterSetIds.push_back(bestParameterSetIds[k]);
         }
 
-        // add 10% new random sets
-        for (int k = 0; k < tenPercentAmount; k++)
+        // add new random sets
+        for (int k = 0; k < m_paramData.numAddedRandomSetsDuringEvolution; k++)
         {
             ParamSet pset;
             fillWithRandomValues(pset.params);
@@ -335,12 +346,12 @@ namespace NeuralNetwork
         std::random_device rd;
         std::mt19937 gen(rd());
         std::uniform_real_distribution<double> rndChance(0, 1);
-        std::uniform_real_distribution<double> rndDist(m_paramData.minValue, std::nextafter(m_paramData.maxValue, DBL_MAX));
+        std::uniform_real_distribution<double> rndDist(m_paramData.minRandomParamValue, std::nextafter(m_paramData.maxRandomParamValue, DBL_MAX));
 
         pset.params.clear();
         for (int k = 0; k < m_paramData.numParams; k++)
         {
-            if (rndChance(gen) <= MUTATION_CHANCE)
+            if (m_paramData.mutationChance > 0 && rndChance(gen) <= m_paramData.mutationChance)
             {
                 // replace with a completely random value
                 pset.params.push_back(rndDist(gen));

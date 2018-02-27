@@ -21,6 +21,7 @@ namespace NeuralNetwork
         ParameterManager(const ParameterManagerData pmData);
 
     public:
+        void describeParameterManager() const;
         bool readDataFromFile();
         bool dumpDataToFile() const;
         void fillWithRandomValues(std::vector<double>& params) const;

@@ -22,7 +22,7 @@ namespace Game
     class TicTacToeTrainer
     {
     public:
-        TicTacToeTrainer();
+        TicTacToeTrainer() = default;
         ~TicTacToeTrainer();
 
     public:
@@ -32,6 +32,7 @@ namespace Game
         void handleTrainingIteration(bool requiresFurtherEvolution);
 
     private:
+        bool readConfigValues();
         void describeTrainer() const;
         void describeScoreForId(int id) const;
         void playMatch(BasePlayer& playerA, BasePlayer& playerB);
@@ -45,11 +46,15 @@ namespace Game
     private:
         bool m_initialized = false;
 
-        double m_minParamValue;
-        double m_maxParamValue;
-        int m_numIterations = 1;
-        int m_numParamSets = 1;
-        int m_numMatches = 1;
+        ParameterManagerData m_paramData; /// collection of data needed by the parameter manager
+        int m_numIterations = 1; /// number of training iterations
+        int m_numParamSets = 5; /// number of concurrently tried parameter sets
+
+        /// number of matches run to compute a score for each parameter set
+        /// actually, we run twice this amount (trying both as first and second player)
+        int m_numMatches = 10; 
+
+        std::vector<int> m_numHiddenNodes; /// number of nodes within each hidden layer
 
         std::shared_ptr<TicTacToeLogic> m_gameLogic;
         std::shared_ptr<NeuralNetwork::ParameterManager> m_paramManager;

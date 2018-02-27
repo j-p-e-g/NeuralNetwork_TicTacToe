@@ -38,6 +38,7 @@ namespace NeuralNetwork
             PRINT_ERROR(buffer);
             return false;
         }
+
         destroyNetwork();
 
         Layer prevLayer; // initially empty
@@ -221,8 +222,7 @@ namespace NeuralNetwork
 
             buffer << m_layers[k].size();
         }
-
-        buffer << std::endl << "  #parameters: " << getNumParameters() << std::endl;
+        buffer << std::endl;
 
         PRINT_LOG(buffer);
     }
