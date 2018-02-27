@@ -22,11 +22,13 @@ namespace FileIO
         static bool readJsonFromFile(const std::string& fileName, nlohmann::json& jsonObject);
         static bool writeJsonToFile(const std::string& fileName, const nlohmann::json& jsonObject);
 
+    public:
+        static bool getRelativeDataFilePath(const std::string& fileName, std::string& relativePath);
+        static bool openOutFileStream(const std::string& filePath, std::ofstream& ofs, int mode = std::ofstream::out);
+
     private:
         static bool fileExists(const std::string& fileName);
-        static bool getRelativeDataFilePath(const std::string& fileName, std::string& relativePath);
         static bool getRelativeFilePath(const std::string& filePath, std::string& relativePath);
         static bool openInFileStream(const std::string& filePath, std::ifstream& ifs);
-        static bool openOutFileStream(const std::string& filePath, std::ofstream& ofs, int mode = std::ofstream::out);
     };
 }

@@ -13,8 +13,7 @@ namespace NeuralNetwork
     using namespace FileIO;
     using json = nlohmann::json;
 
-    const std::string DATA_FILE_NAME = "values.json";
-    const std::string TEST_FILE_NAME = "test.json";
+    const std::string DATA_FILE_NAME = "params.json";
 
     ParameterManager::ParameterManager(const ParameterManagerData pmData)
         : m_paramData(pmData)
@@ -96,8 +95,7 @@ namespace NeuralNetwork
             j["bestScore"] = pset.score;
         }
 
-        const std::string fileName = "data/test.json";
-        return FileManager::writeJsonToFile(fileName, j);
+        return FileManager::writeJsonToFile(DATA_FILE_NAME, j);
     }
 
     void ParameterManager::fillWithRandomValues(std::vector<double>& params) const

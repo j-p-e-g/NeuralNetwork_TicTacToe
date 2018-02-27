@@ -141,9 +141,9 @@ namespace FileIO
         std::ifstream ifs;
         if (!openInFileStream(relativePath, ifs))
         {
-            char msg[255];
-            sprintf_s(msg, "Failed to open file '%s' for reading", relativePath.c_str());
-            PRINT_ERROR(msg);
+            std::ostringstream buffer;
+            buffer << "Failed to open file '" << relativePath.c_str() << "' for reading";
+            PRINT_ERROR(buffer);
             return false;
         }
 
@@ -159,18 +159,16 @@ namespace FileIO
             return false;
         }
 
-        relativePath += fileName;
-
         std::ofstream ofs;
-        if (openOutFileStream(fileName, ofs))
+        if (openOutFileStream(relativePath, ofs))
         {
             ofs << std::setw(4) << jsonObject << std::endl;
             return true;
         }
 
-        char msg[255];
-        sprintf_s(msg, "Failed to open file '%s' for writing", fileName.c_str());
-        PRINT_ERROR(msg);
+        std::ostringstream buffer;
+        buffer << "Failed to open file '" << relativePath.c_str() << "' for writing";
+        PRINT_ERROR(buffer);
         return false;
     }
 }

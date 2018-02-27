@@ -184,6 +184,18 @@ namespace Game
         PRINT_LOG(buffer);
     }
 
+    double TicTacToeTrainer::computeFinalScore(int id)
+    {
+        auto& found = m_scoreMap.find(id);
+        if (found == m_scoreMap.end())
+        {
+            return 0;
+        }
+
+        found->second.finalScore = getOutcomeRatioScoreForId(id) + getAverageScoreForId(id);
+        return found->second.finalScore;
+    }
+
     double TicTacToeTrainer::getAverageScoreForId(int id) const
     {
         double score = 0.0;
@@ -223,6 +235,18 @@ namespace Game
         return score;
     }
 
+    bool TicTacToeTrainer::getScoreSetForId(int id, ScoreSet& scoreSet) const
+    {
+        const auto& found = m_scoreMap.find(id);
+        if (found == m_scoreMap.end())
+        {
+            return false;
+        }
+
+        scoreSet = found->second;
+        return true;
+    }
+
     void TicTacToeTrainer::run()
     {
         const auto processStart = std::chrono::high_resolution_clock::now();
@@ -236,9 +260,7 @@ namespace Game
 
         for (int i = 0; i < m_numIterations; i++)
         {
-            std::cout << "training iteration " << i << std::endl;
-            const bool requiresFurtherEvolution = (i < m_numIterations - 1);
-            handleTrainingIteration(requiresFurtherEvolution);
+            handleTrainingIteration(i);
         }
 
         const auto processEnd = std::chrono::high_resolution_clock::now();
@@ -250,11 +272,17 @@ namespace Game
         PRINT_LOG(buffer);
 
         m_paramManager->dumpDataToFile();
+
+        dumpTrainingStats();
+        dumpBestSetImprovementStats();
     }
 
-    void TicTacToeTrainer::handleTrainingIteration(bool requiresFurtherEvolution)
+    void TicTacToeTrainer::handleTrainingIteration(int iteration)
     {
         std::ostringstream buffer;
+        buffer << "Training iteration " << iteration;
+        std::cout << buffer.str() << std::endl;
+        PRINT_LOG(buffer);
 
         std::vector<int> currentIds;
         m_paramManager->getActiveParameterSetIds(currentIds);
@@ -306,15 +334,15 @@ namespace Game
             describeScoreForId(id);
 
             // update score
-            const double newScore = getOutcomeRatioScoreForId(id) + getAverageScoreForId(id);
+            const double newScore = computeFinalScore(id);
             m_paramManager->setScore(id, newScore);
         }
-
-        m_paramManager->dumpDataToFile();
 
         std::vector<int> bestSetIds;
         m_paramManager->getParameterSetIdsSortedByScore(bestSetIds);
         assert(!bestSetIds.empty());
+
+        m_idsPerIteration.emplace(iteration, bestSetIds);
 
         ParamSet pset;
         m_paramManager->getParamSetForId(bestSetIds[0], pset);
@@ -324,6 +352,7 @@ namespace Game
         buffer << std::endl << "Best parameter set: " << bestSetIds[0] << ", with score: " << pset.score;
         PRINT_LOG(buffer);
 
+        const bool requiresFurtherEvolution = (iteration < m_numIterations - 1);
         if (requiresFurtherEvolution)
         {
             handleParamSetEvolution();
@@ -507,4 +536,86 @@ namespace Game
         }
     }
 
+    void TicTacToeTrainer::dumpTrainingStats() const
+    {
+        const std::string allSetsFileName = "iteration_scores.csv";
+        const std::string bestSetsFileName = "best_iteration_stats.csv";
+
+        std::string relativePath;
+        if (!FileManager::getRelativeDataFilePath(allSetsFileName, relativePath))
+        {
+            return;
+        }
+
+        std::ofstream ofs;
+        if (!FileManager::openOutFileStream(relativePath, ofs))
+        {
+
+            std::ostringstream buffer;
+            buffer << "Failed to open file '" << relativePath.c_str() << "' for writing";
+            PRINT_ERROR(buffer);
+            return;
+        }
+
+        ofs << "Iteration, Score" << std::endl;
+
+        for (const auto& iter : m_idsPerIteration)
+        {
+            for (const auto& id : iter.second)
+            {
+                ScoreSet score;
+                if (getScoreSetForId(id, score))
+                {
+                    ofs << (iter.first+1) << ", " << score.finalScore << std::endl;
+                }
+            }
+        }
+
+        std::ostringstream buffer;
+        buffer << "dumped training stats to '" << relativePath.c_str() << "'";
+        PRINT_LOG(buffer);
+    }
+
+    void TicTacToeTrainer::dumpBestSetImprovementStats() const
+    {
+        const std::string bestSetsFileName = "best_iteration_stats.csv";
+
+        std::string relativePath;
+        if (!FileManager::getRelativeDataFilePath(bestSetsFileName, relativePath))
+        {
+            return;
+        }
+
+        std::ofstream ofs;
+        if (!FileManager::openOutFileStream(relativePath, ofs))
+        {
+
+            std::ostringstream buffer;
+            buffer << "Failed to open file '" << relativePath.c_str() << "' for writing";
+            PRINT_ERROR(buffer);
+            return;
+        }
+
+        ofs << "Iteration, Id, Score, OutcomeScore, AvgScore, CountInvalid, CountLost, CountTied, CountWon" << std::endl;
+
+        for (const auto& iter : m_idsPerIteration)
+        {
+            if (iter.second.empty())
+            {
+                continue;
+            }
+
+            ScoreSet score;
+            const int bestId = iter.second[0];
+            if (getScoreSetForId(bestId, score))
+            {
+                ofs << (iter.first+1) << ", " << bestId << ", " << score.finalScore << ", " << getOutcomeRatioScoreForId(bestId) << ", " << getAverageScoreForId(bestId)
+                    << ", " << score.invalidCount << ", " << score.lostCount << ", " << score.tiedCount << ", " << score.wonCount << std::endl;
+            }
+        }
+
+        std::ostringstream buffer;
+        buffer << "dumped improvement stats to '" << relativePath.c_str() << "'";
+        PRINT_LOG(buffer);
+    }
 }

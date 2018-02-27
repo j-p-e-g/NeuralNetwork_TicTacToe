@@ -17,6 +17,7 @@ namespace Game
         int tiedCount = 0;
 
         std::vector<double> scores;
+        double finalScore = 0;
     };
 
     class TicTacToeTrainer
@@ -29,7 +30,7 @@ namespace Game
         bool setup();
         void run();
 
-        void handleTrainingIteration(bool requiresFurtherEvolution);
+        void handleTrainingIteration(int iteration);
 
     private:
         bool readConfigValues();
@@ -39,9 +40,13 @@ namespace Game
         GameState playOneTurn(BasePlayer& player, bool firstPlayer);
         double computeMatchScore(BasePlayer& player, int numTurns, GameState finalGameState);
         void addScore(const BasePlayer& player, double score, GameState playerGameState);
+        double computeFinalScore(int id);
         double getAverageScoreForId(int id) const;
         double getOutcomeRatioScoreForId(int id) const;
+        bool getScoreSetForId(int id, ScoreSet& scoreSet) const;
         void handleParamSetEvolution();
+        void dumpTrainingStats() const;
+        void dumpBestSetImprovementStats() const;
 
     private:
         bool m_initialized = false;
@@ -60,5 +65,6 @@ namespace Game
         std::shared_ptr<NeuralNetwork::ParameterManager> m_paramManager;
         std::shared_ptr<NeuralNetwork::NodeNetwork> m_nodeNetwork;
         std::map<int, ScoreSet> m_scoreMap;
+        std::map<int, std::vector<int>> m_idsPerIteration;
     };
 }
