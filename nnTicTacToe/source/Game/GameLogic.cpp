@@ -1,6 +1,8 @@
 #include "stdafx.h"
 
-#include <assert.h> 
+#include <algorithm>
+#include <assert.h>
+
 #include "GameLogic.h"
 
 namespace Game
@@ -14,6 +16,12 @@ namespace Game
         assert(index >= 0 && index < getBoardSize());
 
         return m_gameCells[index];
+    }
+
+    void GameLogic::setGameCells(const std::vector<CellState>& gameCells)
+    {
+        assert(gameCells.size() == getBoardSize());
+        m_gameCells = gameCells;
     }
 
     void GameLogic::getGameCells(std::vector<CellState>& gameCells) const
@@ -169,5 +177,48 @@ namespace Game
 
         // otherwise the game is still on
         return GameState::GS_ONGOING;
+    }
+
+    void TicTacToeLogic::collectInconclusiveFinalGameBoardStates(std::vector<std::vector<CellState>>& collectedGameStates)
+    {
+        collectedGameStates.clear();
+
+        // last turn: each player has made 4 moves, and one cell is empty
+        std::vector<CellState> cellStates;
+        cellStates.push_back(CellState::CS_EMPTY);
+        for (int k = 0; k < 4; k++)
+        {
+            cellStates.push_back(CellState::CS_PLAYER1);
+        }
+        for (int k = 0; k < 4; k++)
+        {
+            cellStates.push_back(CellState::CS_PLAYER2);
+        }
+
+        // next_permutation requires the vector to be sorted
+        std::sort(cellStates.begin(), cellStates.end());
+
+        TicTacToeLogic logic;
+        do
+        {
+            // for each permutation, prepare the board accordingly
+            logic.initBoard();
+            for (unsigned int cellId = 0; cellId < cellStates.size(); cellId++)
+            {
+                const CellState state = cellStates[cellId];
+                if (state != CellState::CS_EMPTY)
+                {
+                    logic.applyMove(state == CellState::CS_PLAYER1 ? 0 : 1, cellId);
+                }
+            }
+
+            // ... but only add the permutation if neither player has won already
+            const GameState gameState = logic.evaluateBoard();
+            if (gameState == GS_ONGOING)
+            {
+                collectedGameStates.push_back(cellStates);
+            }
+        }
+        while (std::next_permutation(cellStates.begin(), cellStates.end()));
     }
 }

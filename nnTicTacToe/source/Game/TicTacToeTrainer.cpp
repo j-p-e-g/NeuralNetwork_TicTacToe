@@ -13,6 +13,8 @@
 #include "NeuralNetwork/NodeNetwork.h"
 #include "NeuralNetwork/ParameterManager.h"
 
+#define JUST_TEST_VALIDITY 1
+
 namespace Game
 {
     using namespace FileIO;
@@ -258,6 +260,10 @@ namespace Game
             return;
         }
 
+#ifdef JUST_TEST_VALIDITY
+        TicTacToeLogic::collectInconclusiveFinalGameBoardStates(m_gameStateCollection);
+#endif
+
         for (int i = 0; i < m_numIterations; i++)
         {
             handleTrainingIteration(i);
@@ -309,6 +315,28 @@ namespace Game
 
             m_nodeNetwork->assignParameters(pset.params);
 
+#ifdef JUST_TEST_VALIDITY
+            {
+                // for each possible permutation on inconclusive last-turn states,
+                // try whether the ai makes a valid move
+                for (const auto& gameCells : m_gameStateCollection)
+                {
+                    m_gameLogic->setGameCells(gameCells);
+
+                    AiPlayer aiPlayer(id, CellState::CS_PLAYER1, m_nodeNetwork);
+                    const int nextMove = aiPlayer.decideMove(gameCells);
+
+                    GameState finalState = GameState::GS_GAMEOVER_TIMEOUT;
+                    if (!m_gameLogic->isValidMove(0, nextMove))
+                    {
+                        finalState = GameState::GS_INVALID;
+                    }
+
+                    const double score = computeMatchScore(aiPlayer, 4, finalState);
+                    addScore(aiPlayer, score, finalState);
+                }
+            }
+#else
             {
                 // play N matches with the AI as the first player
                 AiPlayer aiPlayer(id, CellState::CS_PLAYER1, m_nodeNetwork);
@@ -330,6 +358,7 @@ namespace Game
                     playMatch(randomPlayer, aiPlayer);
                 }
             }
+#endif
 
             describeScoreForId(id);
 

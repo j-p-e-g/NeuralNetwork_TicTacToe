@@ -2,6 +2,8 @@
 #include "CppUnitTest.h"
 #include "Game/GameLogic.h"
 
+#include <set>
+
 namespace GameLogicTest
 {
     using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -37,7 +39,6 @@ namespace GameLogicTest
             Assert::AreEqual(true, CellState::CS_PLAYER1 == ticTacToe.getCellValue(1, 0));
             Assert::AreEqual(true, CellState::CS_EMPTY == ticTacToe.getCellValue(2, 1));
         }
-
 
         TEST_METHOD(TicTacToeLogic_isValidMove_default)
         {
@@ -229,6 +230,50 @@ namespace GameLogicTest
             ticTacToe.applyMove(0, 6);
             ticTacToe.applyMove(1, 8);
             Assert::AreEqual(true, GameState::GS_ONGOING == ticTacToe.evaluateBoard());
+        }
+
+        TEST_METHOD(TicTacToeLogic_collectInconclusiveFinalGameBoardStateInputValues)
+        {
+            std::vector<std::vector<CellState>> collectedGameStates;
+
+            TicTacToeLogic::collectInconclusiveFinalGameBoardStates(collectedGameStates);
+
+            // 630 permutations in total, of these 408 are already concluded by one or the other player winning
+            Assert::AreEqual(222, static_cast<int>(collectedGameStates.size()));
+
+            std::set<std::vector<CellState>> uniqueCollection;
+            for (const auto& list : collectedGameStates)
+            {
+                uniqueCollection.emplace(list);
+                Assert::AreEqual(9, static_cast<int>(list.size()));
+
+                int countEmpty = 0;
+                int countPlayerOne = 0;
+                int countPlayerTwo = 0;
+                for (const auto& val : list)
+                {
+                    switch (val)
+                    {
+                    case CellState::CS_EMPTY:
+                        countEmpty++;
+                        break;
+                    case CellState::CS_PLAYER1:
+                        countPlayerOne++;
+                        break;
+                    case CellState::CS_PLAYER2:
+                        countPlayerTwo++;
+                        break;
+                    }
+                }
+
+                // 1 empty cell, 4 occupied cells for each player
+                Assert::AreEqual(1, countEmpty);
+                Assert::AreEqual(4, countPlayerOne);
+                Assert::AreEqual(4, countPlayerTwo);
+            }
+
+            // no duplicates
+            Assert::AreEqual(collectedGameStates.size(), uniqueCollection.size());
         }
     };
 }

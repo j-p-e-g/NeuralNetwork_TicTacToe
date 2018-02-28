@@ -27,6 +27,7 @@ namespace Game
         int getBoardSize() const;
         int countCellState(const CellState state) const;
         CellState getCellValue(int row, int col) const;
+        virtual void setGameCells(const std::vector<CellState>& gameCells);
         virtual void getGameCells(std::vector<CellState>& gameCells) const;
 
     protected:
@@ -49,5 +50,10 @@ namespace Game
         bool applyMove(int playerId, int actionIndex) override;
         void getNodeNetworkInputValues(std::vector<double>& inputValues) const override;
         GameState evaluateBoard() const override;
+
+    public:
+        /// collect all possible permutations of values the game board can have at the last turn
+        /// (when only one cell remains empty and the game hasn't been decided yet)
+        static void collectInconclusiveFinalGameBoardStates(std::vector<std::vector<CellState>>& collectedGameStates);
     };
 }

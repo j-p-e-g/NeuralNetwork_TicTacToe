@@ -66,5 +66,6 @@ namespace Game
         std::shared_ptr<NeuralNetwork::NodeNetwork> m_nodeNetwork;
         std::map<int, ScoreSet> m_scoreMap;
         std::map<int, std::vector<int>> m_idsPerIteration;
+        std::vector<std::vector<CellState>> m_gameStateCollection;
     };
 }
