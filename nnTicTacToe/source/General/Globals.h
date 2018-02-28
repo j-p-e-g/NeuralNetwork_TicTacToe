@@ -33,8 +33,17 @@ struct ParameterManagerData
 
     /// chance of a single parameter being replaced with a random value
     /// in the parameter set evolution step
-    double mutationChance = 0.01;
+    double mutationReplacementChance = 0.01;
 
-    double numBestSetsKeptDuringEvolution = 1; /// number of the top parameter sets (sorted by score) copied over from the previous iteration
-    double numAddedRandomSetsDuringEvolution = 1; /// number of random sets newly added at each evolution step
+    /// chance of a single parameter receiving a bonus
+    /// in the parameter set evolution step
+    double mutationBonusChance = 0.01;
+
+    /// how much the [min, max] range is scaled when a random bonus is added to a parameter
+    /// in the parameter set evolution step
+    double mutationBonusScale = 1;
+
+    int numBestSetsKeptDuringEvolution = 1; /// number of the top parameter sets (sorted by score) copied over from the previous iteration
+    int numBestSetsMutatedDuringEvolution = 1; /// number of sets newly created by mutating the best sets from the previous iteration
+    int numAddedRandomSetsDuringEvolution = 1; /// number of random sets newly added at each evolution step
 };

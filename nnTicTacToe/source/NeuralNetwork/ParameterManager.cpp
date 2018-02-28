@@ -19,6 +19,10 @@ namespace NeuralNetwork
         : m_paramData(pmData)
         , m_nextId(0)
     {
+        assert(m_paramData.minRandomParamValue < m_paramData.maxRandomParamValue);
+
+        // skip this step if there's no chance of actually tweaking any parameters
+        m_executeMutationStep = (m_paramData.mutationReplacementChance > 0) || (m_paramData.mutationBonusChance > 0 && m_paramData.mutationBonusScale != 0);
     }
 
     void ParameterManager::describeParameterManager() const
@@ -27,8 +31,13 @@ namespace NeuralNetwork
         buffer << "ParameterManager: ";
         buffer << std::endl << "  #parameters: " << m_paramData.numParams;
         buffer << std::endl << "  random param values picked within [" << m_paramData.minRandomParamValue << ", " << m_paramData.maxRandomParamValue << "]";
-        buffer << std::endl << "  mutation chance during evolution: " << m_paramData.mutationChance;
+        buffer << std::endl << "  mutation replacement chance during evolution: " << m_paramData.mutationReplacementChance;
+        buffer << std::endl << "  mutation bonus chance during evolution: " << m_paramData.mutationBonusChance;
+        buffer << std::endl << "  mutation bonus scale during evolution: " << m_paramData.mutationBonusScale;
+        buffer << std::endl << "  mutation bonus within [ " << m_paramData.minRandomParamValue * m_paramData.mutationBonusScale 
+                            << ", " << m_paramData.maxRandomParamValue * m_paramData.mutationBonusScale << "]";
         buffer << std::endl << "  number of best sets kept during evolution: " << m_paramData.numBestSetsKeptDuringEvolution;
+        buffer << std::endl << "  number of best sets mutated during evolution: " << m_paramData.numBestSetsMutatedDuringEvolution;
         buffer << std::endl << "  number of random sets added during evolution: " << m_paramData.numAddedRandomSetsDuringEvolution;
         buffer << std::endl;
         PRINT_LOG(buffer);
@@ -218,13 +227,42 @@ namespace NeuralNetwork
         fillParameterSetProbabilityMap(probabilityMap);
         assert(probabilityMap.size() > 1);
 
-        assert(m_paramData.numBestSetsKeptDuringEvolution + m_paramData.numAddedRandomSetsDuringEvolution < totalNumberOfSets);
+        assert(m_paramData.numBestSetsKeptDuringEvolution + m_paramData.numBestSetsKeptDuringEvolution + m_paramData.numAddedRandomSetsDuringEvolution < totalNumberOfSets);
 
         // keep best parameter sets
         for (int k = 0; k < m_paramData.numBestSetsKeptDuringEvolution; k++)
         {
             buffer << std::endl << "Keeping best set " << bestParameterSetIds[k];
             newParameterSetIds.push_back(bestParameterSetIds[k]);
+        }
+
+        if (m_executeMutationStep)
+        {
+            // create heavily mutated version of the best parameter sets
+            for (int k = 0; k < m_paramData.numBestSetsMutatedDuringEvolution; k++)
+            {
+                const int bestId = bestParameterSetIds[k];
+
+                ParamSet pset;
+                if (m_executeMutationStep && !createMutatedParameterSet(bestId, pset))
+                {
+                    return false;
+                }
+
+                // in the unlikely case that this new set is identical to the previous one, don't bother adding it
+                ParamSet oldSet;
+                if (getParamSetForId(bestId, oldSet))
+                {
+                    if (oldSet.params == pset.params)
+                    {
+                        continue;
+                    }
+                }
+
+                const int newSetId = addNewParamSet(pset);
+                buffer << std::endl << "Mutating best set " << bestId << " resulted in new param set " << newSetId;
+                newParameterSetIds.push_back(newSetId);
+            }
         }
 
         // add new random sets
@@ -328,7 +366,28 @@ namespace NeuralNetwork
         return -1;
     }
 
-    bool ParameterManager::createCrossoverParameterSet(int id1, int id2, ParamSet& pset)
+    bool ParameterManager::createMutatedParameterSet(int id, ParamSet& pset) const
+    {
+        ParamSet pidset;
+
+        if (!getParamSetForId(id, pidset))
+        {
+            std::ostringstream buffer;
+            buffer << "Unable to create mutated parameter set for invalid id " << id;
+            PRINT_ERROR(buffer);
+            return false;
+        }
+
+        pset.params.clear();
+        for (const auto& param : pidset.params)
+        {
+            pset.params.push_back(getMutatedValue(param));
+        }
+
+        return  true;
+    }
+
+    bool ParameterManager::createCrossoverParameterSet(int id1, int id2, ParamSet& pset) const
     {
         ParamSet p1;
         ParamSet p2;
@@ -344,27 +403,42 @@ namespace NeuralNetwork
         std::random_device rd;
         std::mt19937 gen(rd());
         std::uniform_real_distribution<double> rndChance(0, 1);
-        std::uniform_real_distribution<double> rndDist(m_paramData.minRandomParamValue, std::nextafter(m_paramData.maxRandomParamValue, DBL_MAX));
 
         pset.params.clear();
         for (int k = 0; k < m_paramData.numParams; k++)
         {
-            if (m_paramData.mutationChance > 0 && rndChance(gen) <= m_paramData.mutationChance)
-            {
-                // replace with a completely random value
-                pset.params.push_back(rndDist(gen));
-            }
             // use value from either of the parents
-            else if (rndChance(gen) < 0.5)
-            {
-                pset.params.push_back(p1.params[k]);
-            }
-            else
-            {
-                pset.params.push_back(p2.params[k]);
-            }
+            const double param = (rndChance(gen) < 0.5 ? p1.params[k] : p2.params[k]);
+            pset.params.push_back(getMutatedValue(param));
         }
 
         return  true;
+    }
+
+    double ParameterManager::getMutatedValue(double param) const
+    {
+        if (!m_executeMutationStep)
+        {
+            return param;
+        }
+
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<double> rndChance(0, 1);
+        std::uniform_real_distribution<double> rndDist(m_paramData.minRandomParamValue, std::nextafter(m_paramData.maxRandomParamValue, DBL_MAX));
+
+        if (m_paramData.mutationReplacementChance > 0 && rndChance(gen) <= m_paramData.mutationReplacementChance)
+        {
+            return rndDist(gen);
+        }
+
+        if (m_paramData.mutationBonusChance > 0 && rndChance(gen) <= m_paramData.mutationBonusChance)
+        {
+            // randomly tweak the parameter, but ensure that it's still between [min, max]
+            const double newParam = param + rndDist(gen) * m_paramData.mutationBonusScale;
+            return std::min(m_paramData.maxRandomParamValue, std::max(m_paramData.minRandomParamValue, newParam));
+        }
+
+        return param;
     }
 }

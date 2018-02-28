@@ -211,6 +211,192 @@ namespace ParameterManagerTest
             Assert::AreEqual(true, found1->second < found2->second);
         }
 
+        TEST_METHOD(ParameterManager_getMutatedValue_noMutation_chances)
+        {
+            ParameterManagerData data;
+            data.minRandomParamValue = -25;
+            data.maxRandomParamValue = 25;
+            data.mutationBonusChance = 0;
+            data.mutationReplacementChance = 0;
+            data.mutationBonusScale = 10;
+
+            ParameterManager pm(data);
+
+            // if the mutation chance is zero, the value should stay unchanged
+            for (int k = 0; k < 20; k++)
+            {
+                Assert::AreEqual(k, pm.getMutatedValue(k), 0.0001);
+            }
+        }
+
+        TEST_METHOD(ParameterManager_getMutatedValue_noMutation_BonusScale)
+        {
+            ParameterManagerData data;
+            data.minRandomParamValue = -3;
+            data.maxRandomParamValue = 3;
+            data.mutationReplacementChance = 0;
+            data.mutationBonusChance = 1;
+            data.mutationBonusScale = 0;
+
+            ParameterManager pm(data);
+
+            // if the bonus scale is zero, the value should stay unchanged
+            for (int k = -10; k < 10; k++)
+            {
+                Assert::AreEqual(k, pm.getMutatedValue(k), 0.0001);
+            }
+        }
+
+        TEST_METHOD(ParameterManager_getMutatedValue_alwaysReplace)
+        {
+            ParameterManagerData data;
+            data.minRandomParamValue = -5;
+            data.maxRandomParamValue = 5;
+            data.mutationReplacementChance = 1;
+            data.mutationBonusChance = 0;
+            data.mutationBonusScale = 10;
+
+            ParameterManager pm(data);
+
+            // if the replacement chance is 1, the value will always be randomly picked within [min, max]
+            std::vector<double> randomValues;
+            for (int k = 30; k < 50; k++)
+            {
+                randomValues.push_back(pm.getMutatedValue(k));
+            }
+
+            std::set<double> uniqueValues;
+            for (const auto& val : randomValues)
+            {
+                Assert::AreEqual(true, val >= -5);
+                Assert::AreEqual(true, val <= 5);
+
+                uniqueValues.emplace(val);
+            }
+
+            // not all the same value
+            // may fail but that's extremely unlikely
+            Assert::AreEqual(true, uniqueValues.size() > 1);
+        }
+
+        TEST_METHOD(ParameterManager_getMutatedValue_replacementChance)
+        {
+            ParameterManagerData data;
+            data.minRandomParamValue = -20;
+            data.maxRandomParamValue = -10;
+            data.mutationReplacementChance = 0.5;
+            data.mutationBonusChance = 0;
+            data.mutationBonusScale = 0;
+
+            ParameterManager pm(data);
+
+            int countReplaced = 0;
+            for (int k = 0; k < 100; k++)
+            {
+                const double mutatedValue = pm.getMutatedValue(k);
+                if (mutatedValue != k)
+                {
+                    Assert::AreEqual(true, mutatedValue >= -20);
+                    Assert::AreEqual(true, mutatedValue <= -10);
+
+                    countReplaced++;
+                }
+            }
+
+            // some but not all values got replaced
+            // this may fail but is highly unlikely
+            Assert::AreNotEqual(0, countReplaced);
+            Assert::AreNotEqual(100, countReplaced);
+        }
+
+        TEST_METHOD(ParameterManager_getMutatedValue_noBonusChance)
+        {
+            ParameterManagerData data;
+            data.minRandomParamValue = -8;
+            data.maxRandomParamValue = 8;
+            data.mutationReplacementChance = 0.1;
+            data.mutationBonusChance = 0;
+            data.mutationBonusScale = 10;
+
+            ParameterManager pm(data);
+
+            // if the bonus chance is zero, the value may be replaced (replacement chance) but it won't get a bonus
+            for (int k = 100; k < 120; k++)
+            {
+                const double mutatedValue = pm.getMutatedValue(k);
+                Assert::AreEqual(true, mutatedValue == k || mutatedValue >= -8 && mutatedValue <= 8);
+            }
+        }
+
+        TEST_METHOD(ParameterManager_getMutatedValue_alwaysBonus)
+        {
+            ParameterManagerData data;
+            data.minRandomParamValue = -10;
+            data.maxRandomParamValue = 10;
+            data.mutationReplacementChance = 0;
+            data.mutationBonusChance = 1;
+            data.mutationBonusScale = 0.25;
+
+            ParameterManager pm(data);
+
+            // if the replacement chance is zero and the bonus chance is 1, 
+            // the value will always get a random bonus from within [min/4, max/4]
+            // and be capped between [min, max]
+            std::vector<double> randomValues;
+            for (int k = -10; k < 10; k++)
+            {
+                const double mutatedValue = pm.getMutatedValue(k);
+
+                // exclude -10 and 10 in this check as with those it's too likely for this test to fail 
+                // (due to capping the mutated value)
+                if (k > -10 && k < 10)
+                {
+                    Assert::AreNotEqual(k, mutatedValue, 0.0001);
+                }
+
+                Assert::AreEqual(true, mutatedValue >= k - 2.5);
+                Assert::AreEqual(true, mutatedValue <= k + 2.5);
+                Assert::AreEqual(true, mutatedValue >= -10);
+                Assert::AreEqual(true, mutatedValue <= 10);
+            }
+        }
+
+        TEST_METHOD(ParameterManager_getMutatedValue_bonusChance)
+        {
+            ParameterManagerData data;
+            data.numParams = 100;
+            data.minRandomParamValue = -20;
+            data.maxRandomParamValue = 20;
+            data.mutationReplacementChance = 0;
+            data.mutationBonusChance = 0.3;
+            data.mutationBonusScale = 1;
+
+            ParameterManager pm(data);
+
+            std::vector<double> values;
+            pm.fillWithRandomValues(values);
+
+            int countChanged = 0;
+            for (const auto& val : values)
+            {
+                const double mutatedValue = pm.getMutatedValue(val);
+                if (mutatedValue != val)
+                {
+                    countChanged++;
+
+                    Assert::AreEqual(true, mutatedValue >= -20);
+                    Assert::AreEqual(true, mutatedValue <= 20);
+                    Assert::AreEqual(true, mutatedValue >= val - 20);
+                    Assert::AreEqual(true, mutatedValue <= val + 20);
+                }
+            }
+
+            // some but not all values got changed
+            // this may fail but is rather unlikely
+            Assert::AreNotEqual(0, countChanged);
+            Assert::AreNotEqual(data.numParams, countChanged);
+        }
+
         TEST_METHOD(ParameterManager_createCrossOverParameterSet)
         {
             ParamSet ps1;

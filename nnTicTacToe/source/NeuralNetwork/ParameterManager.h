@@ -37,11 +37,19 @@ namespace NeuralNetwork
         bool evolveParameterSets(int totalNumberOfSets, std::vector<int>& newParameterSetIds);
         void fillParameterSetProbabilityMap(std::map<double, int> &probabilityMap);
         static int getIdByProbability(const std::map<double, int>& probabilityMap);
-        bool createCrossoverParameterSet(int id1, int id2, ParamSet& pset);
+
+        /// create a new parameter set by mutating each parameter in the parent set
+        bool createMutatedParameterSet(int id, ParamSet& pset) const;
+
+        /// create a new parameter set by combining the values from two parent sets
+        bool createCrossoverParameterSet(int id1, int id2, ParamSet& pset) const;
+
+        double getMutatedValue(double param) const;
 
     private:
         ParameterManagerData m_paramData;
         std::map<int, ParamSet> m_paramSets;
         int m_nextId;
+        bool m_executeMutationStep = true;
     };
 }
