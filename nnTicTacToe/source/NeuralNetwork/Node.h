@@ -1,8 +1,9 @@
 #pragma once
 
-#include <vector>
+#include <functional>
 #include <memory>
 #include <queue>
+#include <vector>
 
 namespace NeuralNetwork
 {
@@ -39,7 +40,7 @@ namespace NeuralNetwork
         virtual int getNumParameters() const;
 
     public:
-        virtual void updateValue();
+        virtual void updateValue(std::function<double(double)> acceptanceFunction);
 
         void setValue(double val) { m_value = val; }
         double getValue() const { return m_value; }
@@ -61,7 +62,7 @@ namespace NeuralNetwork
         virtual int getNumParameters() const override;
 
     public:
-        virtual void updateValue() override;
+        virtual void updateValue(std::function<double(double)> acceptanceFunction) override;
 
         void addValue(double val)
         {

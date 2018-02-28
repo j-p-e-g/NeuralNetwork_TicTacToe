@@ -6,6 +6,7 @@
         9,
         9
     ],
+    "acceptance_function": "none",
     "min_random_parameter": -10,
     "max_random_parameter": 10,
     "num_best_sets_kept_during_evolution": 2,

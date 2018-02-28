@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vector>
 #include <memory>
 #include <queue>
+#include <vector>
 
 #include "General/Globals.h"
 #include "Node.h"
@@ -16,7 +16,7 @@ namespace NeuralNetwork
     class NodeNetworkInterface
     {
     public:
-        virtual bool createNetwork(const NetworkSizeData& sizeData) = 0;
+        virtual bool createNetwork(const NetworkSizeData& sizeData, const std::string& acceptanceFunctionType = "none") = 0;
         virtual void destroyNetwork() = 0;
 
         virtual bool assignInputValues(const std::vector<double>& inputValues) = 0;
@@ -39,7 +39,7 @@ namespace NeuralNetwork
         ~NodeNetwork();
 
     public:
-        bool createNetwork(const NetworkSizeData& sizeData) override;
+        bool createNetwork(const NetworkSizeData& sizeData, const std::string& acceptanceFunctionType = "none") override;
         void destroyNetwork() override;
 
         bool assignInputValues(const std::vector<double>& inputValues) override;
@@ -52,10 +52,17 @@ namespace NeuralNetwork
         int getNumParameters() const;
         void describeNetwork() const override;
 
+    public:
+        static double noAcceptanceFunction(double val);
+        static double sigmoidAcceptanceFunction(double val);
+        static double reluAcceptanceFunction(double val);
+
     private:
         Layer addInnerLayer(int numNodes, const Layer& previousLayer);
 
     private:
+        std::string m_acceptanceFunctionType;
+        std::function<double(double)> m_acceptanceFunction;
         std::vector<Layer> m_layers;
     };
 }

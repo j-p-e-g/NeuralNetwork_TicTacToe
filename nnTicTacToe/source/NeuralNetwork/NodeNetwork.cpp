@@ -28,7 +28,7 @@ namespace NeuralNetwork
         m_layers.clear();
     }
 
-    bool NodeNetwork::createNetwork(const NetworkSizeData& sizeData)
+    bool NodeNetwork::createNetwork(const NetworkSizeData& sizeData, const std::string& acceptanceFunctionType)
     {
         if (sizeData.numInputNodes <= 0 || sizeData.numOutputNodes <= 0)
         {
@@ -40,6 +40,20 @@ namespace NeuralNetwork
         }
 
         destroyNetwork();
+
+        m_acceptanceFunctionType = acceptanceFunctionType;
+        if (acceptanceFunctionType == "relu")
+        {
+            m_acceptanceFunction = reluAcceptanceFunction;
+        }
+        else if (m_acceptanceFunctionType == "sigmoid")
+        {
+            m_acceptanceFunction = sigmoidAcceptanceFunction;
+        }
+        else
+        {
+            m_acceptanceFunction = noAcceptanceFunction;
+        }
 
         Layer prevLayer; // initially empty
         for (int k = 0; k < sizeData.numInputNodes; k++)
@@ -171,7 +185,7 @@ namespace NeuralNetwork
         {
             for (auto& node : layer)
             {
-                (*node).updateValue();
+                (*node).updateValue(m_acceptanceFunction);
             }
         }
 
@@ -222,8 +236,34 @@ namespace NeuralNetwork
 
             buffer << m_layers[k].size();
         }
+
+        buffer << std::endl << "  acceptance function type: " << m_acceptanceFunctionType;
         buffer << std::endl;
 
         PRINT_LOG(buffer);
+    }
+
+    double NodeNetwork::noAcceptanceFunction(double val)
+    {
+        return val;
+    }
+
+    double NodeNetwork::sigmoidAcceptanceFunction(double val)
+    {
+        // A sigmoid function is a mathematical function having a characteristic "S"-shaped curve or sigmoid curve. 
+        // Often, sigmoid function refers to the special case of the logistic function  defined by the formula
+        // S(x) = 1 / (1 + e^(-1x)) = e^x / (1 + e^x)
+
+        const double e = std::exp(val);
+        return e / (e + 1);
+    }
+
+    double NodeNetwork::reluAcceptanceFunction(double val)
+    {
+        // ReLU = rectified linear unit
+        // In the context of artificial neural networks, the rectifier is an activation function defined as the positive part of its argument:
+        // f(x) = x^(+) = max(0, x)
+
+        return std::max<double>(0, val);
     }
 }

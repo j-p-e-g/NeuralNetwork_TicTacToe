@@ -54,7 +54,7 @@ namespace NeuralNetwork
         return true;
     }
 
-    void Node::updateValue()
+    void Node::updateValue(std::function<double(double)> acceptanceFunction)
     {
         // nothing to do
     }
@@ -101,14 +101,16 @@ namespace NeuralNetwork
         return static_cast<int>(m_inputEdges.size()) + 1;
     }
 
-    void InnerNode::updateValue()
+    void InnerNode::updateValue(std::function<double(double)> acceptanceFunction)
     {
-        m_value = m_bias;
+        m_value = 0;
 
         // sum of all incoming edge values
         for (const auto& ie : m_inputEdges)
         {
             m_value += ie->getValue();
         }
+
+        m_value = acceptanceFunction(m_value + m_bias);
     }
 }
