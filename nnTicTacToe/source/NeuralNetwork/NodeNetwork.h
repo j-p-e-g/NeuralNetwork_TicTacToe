@@ -27,7 +27,9 @@ namespace NeuralNetwork
         virtual bool assignParameters(std::queue<double> params) = 0;
 
         virtual bool computeValues() = 0;
-        virtual int getOutputValues(std::vector<double>& outputValues) const = 0;
+
+        /// If applySoftMax is true, all values are proportionally rescaled such that their range is in [0, 1] and their sum is 1.
+        virtual int getOutputValues(std::vector<double>& outputValues, bool applySoftMax = false) const = 0;
         virtual void describeNetwork() const = 0;
     };
 
@@ -39,30 +41,34 @@ namespace NeuralNetwork
         ~NodeNetwork();
 
     public:
-        bool createNetwork(const NetworkSizeData& sizeData, const std::string& acceptanceFunctionType = "none") override;
+        bool createNetwork(const NetworkSizeData& sizeData, const std::string& activationFunctionType = "none") override;
+        void assignActivationFunction(const std::string &activationFunctionType);
+
         void destroyNetwork() override;
 
         bool assignInputValues(const std::vector<double>& inputValues) override;
         bool assignParameters(const std::vector<double>& params) override;
         bool assignParameters(std::queue<double> params) override;
         bool computeValues() override;
-        int getOutputValues(std::vector<double>& outputValues) const override;
+        int getOutputValues(std::vector<double>& outputValues, bool applySoftMax = false) const override;
 
     public:
         int getNumParameters() const;
         void describeNetwork() const override;
 
     public:
-        static double noAcceptanceFunction(double val);
-        static double sigmoidAcceptanceFunction(double val);
-        static double reluAcceptanceFunction(double val);
+        static double identityActivationFunction(double val);
+        static double sigmoidActivationFunction(double val);
+        static double hyperbolicTanActivationFunction(double val);
+        static double reluActivationFunction(double val);
+        static double leakyReluActivationFunction(double val);
 
     private:
         Layer addInnerLayer(int numNodes, const Layer& previousLayer);
 
     private:
-        std::string m_acceptanceFunctionType;
-        std::function<double(double)> m_acceptanceFunction;
+        std::string m_activationFunctionType;
+        std::function<double(double)> m_activationFunction;
         std::vector<Layer> m_layers;
     };
 }

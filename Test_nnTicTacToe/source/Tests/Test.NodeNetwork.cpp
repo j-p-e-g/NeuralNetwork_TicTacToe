@@ -208,5 +208,177 @@ namespace NodeNetworkTest
             Assert::AreEqual(1.35, outputValues[0], 0.00001);
             Assert::AreEqual(0, bestIndex);
         }
+
+        TEST_METHOD(NodeNetwork_getOutputValues_softMax_single)
+        {
+            NetworkSizeData sizeData;
+            sizeData.numInputNodes = 5;
+            sizeData.numOutputNodes = 1;
+            sizeData.numHiddenNodes = std::vector<int>();
+
+            std::shared_ptr<NodeNetwork> network = std::make_shared<NodeNetwork>();
+            network->createNetwork(sizeData);
+            network->assignInputValues(std::vector<double>({ 0.7, 0.32, -0.4, 0.01, -0.8 }));
+
+            std::queue<double> params = std::queue<double>({ 0.99, 0.1, 1.2, 0.5, -0.3 });
+            network->assignParameters(params);
+            network->computeValues();
+
+            std::vector<double> outputValues;
+            const int bestIndex = network->getOutputValues(outputValues, true);
+
+            // for a single output value, the soft-max output value is exactly 1
+            Assert::AreEqual(1, static_cast<int>(outputValues.size()));
+            Assert::AreEqual(1, outputValues[0], 0.00001);
+            Assert::AreEqual(0, bestIndex);
+        }
+
+        TEST_METHOD(NodeNetwork_getOutputValues_softMax_same)
+        {
+            NetworkSizeData sizeData;
+            sizeData.numInputNodes = 2;
+            sizeData.numOutputNodes = 2;
+            sizeData.numHiddenNodes = std::vector<int>();
+
+            // setup a network in which both output nodes share the same parameters and input values
+            std::shared_ptr<NodeNetwork> network = std::make_shared<NodeNetwork>();
+            network->createNetwork(sizeData);
+            network->assignInputValues(std::vector<double>({ 0.83, 0.83 }));
+
+            std::queue<double> params = std::queue<double>({ -0.6, 0.023, 0.39, -0.6, 0.023, 0.39 });
+            network->assignParameters(params);
+            network->computeValues();
+
+            std::vector<double> outputValues;
+            const int bestIndex = network->getOutputValues(outputValues, true);
+
+            // if there are two output nodes with the exact same input values and edge weights and biases,
+            // each gets 0.5 probability
+            Assert::AreEqual(2, static_cast<int>(outputValues.size()));
+            Assert::AreEqual(0.5, outputValues[0], 0.00001);
+            Assert::AreEqual(0.5, outputValues[1], 0.00001);
+            Assert::AreEqual(0, bestIndex);
+        }
+
+        TEST_METHOD(NodeNetwork_getOutputValues_softMax_different)
+        {
+            NetworkSizeData sizeData;
+            sizeData.numInputNodes = 2;
+            sizeData.numOutputNodes = 3;
+            sizeData.numHiddenNodes = std::vector<int>();
+
+            std::shared_ptr<NodeNetwork> network = std::make_shared<NodeNetwork>();
+            network->createNetwork(sizeData);
+            network->assignInputValues(std::vector<double>({ 0.75, 0.123 }));
+
+            std::queue<double> params = std::queue<double>({ 0.2, 0.999, 0, 0.34, -0.8, 1.03, 0.1, -0.154, 0.78 });
+            network->assignParameters(params);
+            network->computeValues();
+
+            std::vector<double> outputValues;
+            const int bestIndex = network->getOutputValues(outputValues, true);
+
+            // the soft-max output values always add up to 1
+            Assert::AreEqual(3, static_cast<int>(outputValues.size()));
+            Assert::AreEqual(1, outputValues[0] + outputValues[1] + outputValues[2], 0.00001);
+        }
+
+        //------------------------------------
+        // activation functions
+        //------------------------------------
+        TEST_METHOD(NodeNetwork_identityActivationFunction)
+        {
+            // all values remain unchanged
+            Assert::AreEqual(-186.2696, NodeNetwork::identityActivationFunction(-186.2696), 0.0001);
+            Assert::AreEqual(-0.00083, NodeNetwork::identityActivationFunction(-0.00083), 0.0001);
+            Assert::AreEqual(0, NodeNetwork::identityActivationFunction(0), 0.0001);
+            Assert::AreEqual(0.00251, NodeNetwork::identityActivationFunction(0.00251), 0.0001);
+            Assert::AreEqual(96785.573265, NodeNetwork::identityActivationFunction(96785.573265), 0.0001);
+        }
+
+        TEST_METHOD(NodeNetwork_reluActivationFunction)
+        {
+            // negative values are capped to zero
+            Assert::AreEqual(0, NodeNetwork::reluActivationFunction(-21907.584), 0.0001);
+            Assert::AreEqual(0, NodeNetwork::reluActivationFunction(-0.01586), 0.0001);
+
+            // non-negative values remain unchanged
+            Assert::AreEqual(0, NodeNetwork::reluActivationFunction(0), 0.0001);
+            Assert::AreEqual(0.000009, NodeNetwork::reluActivationFunction(0.000009), 0.0001);
+            Assert::AreEqual(7823.52, NodeNetwork::reluActivationFunction(7823.52), 0.0001);
+        }
+
+        TEST_METHOD(NodeNetwork_leakyReluActivationFunction)
+        {
+            // non-negative values remain unchanged
+            Assert::AreEqual(0, NodeNetwork::leakyReluActivationFunction(0), 0.0001);
+            Assert::AreEqual(0.00723, NodeNetwork::leakyReluActivationFunction(0.00723), 0.0001);
+            Assert::AreEqual(999999.199, NodeNetwork::leakyReluActivationFunction(999999.199), 0.0001);
+
+            // negative values are squashed to a much smaller value
+            const double relu1 = NodeNetwork::leakyReluActivationFunction(-194.5);
+            const double relu2 = NodeNetwork::leakyReluActivationFunction(-8986.225);
+            const double relu3 = NodeNetwork::leakyReluActivationFunction(-0.0000623);
+            Assert::AreEqual(true, -194.5 < relu1);
+            Assert::AreEqual(true, -8986.225 < relu2);
+            Assert::AreEqual(true, -0.0000623 < relu3);
+
+            // ... but the order is still the same
+            Assert::AreEqual(true, relu2 < relu1);
+            Assert::AreEqual(true, relu1 < relu3);
+            Assert::AreEqual(true, relu3 < 0);
+        }
+
+        TEST_METHOD(NodeNetwork_sigmoidActivationFunction)
+        {
+            // values are squashed to a range between [0, 1]
+            const double sigm1 = NodeNetwork::sigmoidActivationFunction(-255298.2);
+            const double sigm2 = NodeNetwork::sigmoidActivationFunction(-86.76);
+            const double sigm3 = NodeNetwork::sigmoidActivationFunction(-0.0826);
+            const double sigm4 = NodeNetwork::sigmoidActivationFunction(0);
+            const double sigm5 = NodeNetwork::sigmoidActivationFunction(0.000211);
+            const double sigm6 = NodeNetwork::sigmoidActivationFunction(86.76);
+            const double sigm7 = NodeNetwork::sigmoidActivationFunction(1000000.0);
+
+            // ... but the order is still the same
+            Assert::AreEqual(true, 0 <= sigm1);
+            Assert::AreEqual(true, sigm1 <= sigm2);
+            Assert::AreEqual(true, sigm2 <= sigm3);
+            Assert::AreEqual(true, sigm3 <= sigm4);
+            Assert::AreEqual(true, sigm4 <= sigm5);
+            Assert::AreEqual(true, sigm5 <= sigm6);
+            Assert::AreEqual(true, sigm6 <= sigm7);
+            Assert::AreEqual(true, sigm7 <= 1);
+
+            // while close values may result in identical results, these should be truly smaller
+            Assert::AreEqual(true, sigm1 < sigm4);
+            Assert::AreEqual(true, sigm4 < sigm7);
+        }
+
+        TEST_METHOD(NodeNetwork_hyperbolicTanActivationFunction)
+        {
+            // values are squashed to a range between [-1, 1]
+            const double tanh1 = NodeNetwork::hyperbolicTanActivationFunction(-4265.003);
+            const double tanh2 = NodeNetwork::hyperbolicTanActivationFunction(-1.0);
+            const double tanh3 = NodeNetwork::hyperbolicTanActivationFunction(-0.0000001);
+            const double tanh4 = NodeNetwork::hyperbolicTanActivationFunction(0);
+            const double tanh5 = NodeNetwork::hyperbolicTanActivationFunction(0.000211);
+            const double tanh6 = NodeNetwork::hyperbolicTanActivationFunction(27.82);
+            const double tanh7 = NodeNetwork::hyperbolicTanActivationFunction(53962.99);
+
+            // ... but the order is still the same
+            Assert::AreEqual(true, -1 <= tanh1);
+            Assert::AreEqual(true, tanh1 <= tanh2);
+            Assert::AreEqual(true, tanh2 <= tanh3);
+            Assert::AreEqual(true, tanh3 <= tanh4);
+            Assert::AreEqual(true, tanh4 <= tanh5);
+            Assert::AreEqual(true, tanh5 <= tanh6);
+            Assert::AreEqual(true, tanh6 <= tanh7);
+            Assert::AreEqual(true, tanh7 <= 1);
+
+            // while close values may result in identical results, these should be truly smaller
+            Assert::AreEqual(true, tanh1 < tanh4);
+            Assert::AreEqual(true, tanh4 < tanh7);
+        }
     };
 }

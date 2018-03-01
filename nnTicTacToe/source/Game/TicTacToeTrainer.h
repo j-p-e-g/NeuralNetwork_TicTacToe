@@ -59,9 +59,10 @@ namespace Game
         /// actually, we run twice this amount (trying both as first and second player)
         int m_numMatches = 10; 
 
-        /// defines the type of acceptance function 
-        /// ("sigmoid" or "relu"; anything else is treated as no acceptance function)
-        std::string m_acceptanceFunctionType;
+        /// defines the type of activation function 
+        /// known types: "relu", "leakyrelu", "sigmoid", "tanh"
+        /// anything else is treated as the identity activation function (no modification)
+        std::string m_activationFunctionType;
 
         std::vector<int> m_numHiddenNodes; /// number of nodes within each hidden layer
 

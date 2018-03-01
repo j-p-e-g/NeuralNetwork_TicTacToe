@@ -60,7 +60,7 @@ namespace Game
         m_numIterations = j.at("num_iterations").get<int>();
         m_numMatches = j.at("num_matches").get<int>();
 
-        m_acceptanceFunctionType = j.at("acceptance_function").get<std::string>();
+        m_activationFunctionType = j.at("activation_function").get<std::string>();
 
         const auto& vec = j.at("num_hidden_nodes");
         for (json::const_iterator it = vec.begin(); it != vec.end(); ++it)
@@ -133,7 +133,7 @@ namespace Game
         sizeData.numHiddenNodes = m_numHiddenNodes;
 
         m_nodeNetwork = std::make_shared<NodeNetwork>();
-        if (!m_nodeNetwork->createNetwork(sizeData, m_acceptanceFunctionType))
+        if (!m_nodeNetwork->createNetwork(sizeData, m_activationFunctionType))
         {
             PRINT_ERROR("Network creation failed!");
             return false;

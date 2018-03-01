@@ -10,6 +10,8 @@ namespace NeuralNetwork
 {
     using namespace FileIO;
 
+    const double LEAKY_RELU_MULTIPLIER = 0.01;
+
     // --------------------------
     // NodeNetwork
     // --------------------------
@@ -28,7 +30,7 @@ namespace NeuralNetwork
         m_layers.clear();
     }
 
-    bool NodeNetwork::createNetwork(const NetworkSizeData& sizeData, const std::string& acceptanceFunctionType)
+    bool NodeNetwork::createNetwork(const NetworkSizeData& sizeData, const std::string& activationFunctionType)
     {
         if (sizeData.numInputNodes <= 0 || sizeData.numOutputNodes <= 0)
         {
@@ -41,19 +43,7 @@ namespace NeuralNetwork
 
         destroyNetwork();
 
-        m_acceptanceFunctionType = acceptanceFunctionType;
-        if (acceptanceFunctionType == "relu")
-        {
-            m_acceptanceFunction = reluAcceptanceFunction;
-        }
-        else if (m_acceptanceFunctionType == "sigmoid")
-        {
-            m_acceptanceFunction = sigmoidAcceptanceFunction;
-        }
-        else
-        {
-            m_acceptanceFunction = noAcceptanceFunction;
-        }
+        assignActivationFunction(activationFunctionType);
 
         Layer prevLayer; // initially empty
         for (int k = 0; k < sizeData.numInputNodes; k++)
@@ -79,6 +69,39 @@ namespace NeuralNetwork
         describeNetwork();
 
         return true;
+    }
+
+    void NodeNetwork::assignActivationFunction(const std::string &activationFunctionType)
+    {
+        if (activationFunctionType.find("relu") != std::string::npos)
+        {
+            if (activationFunctionType.find("leak") != std::string::npos)
+            {
+                m_activationFunction = leakyReluActivationFunction;
+                m_activationFunctionType = "leaky ReLU";
+
+            }
+            else
+            {
+                m_activationFunction = reluActivationFunction;
+                m_activationFunctionType = "ReLU";
+            }
+        }
+        else if (activationFunctionType.find("tan") != std::string::npos)
+        {
+            m_activationFunction = hyperbolicTanActivationFunction;
+            m_activationFunctionType = "hyperbolic tan (tanh)";
+        }
+        else if (activationFunctionType.find("sigm") != std::string::npos)
+        {
+            m_activationFunction = sigmoidActivationFunction;
+            m_activationFunctionType = "sigmoid";
+        }
+        else
+        {
+            m_activationFunction = identityActivationFunction;
+            m_activationFunctionType = "identity (none)";
+        }
     }
 
     Layer NodeNetwork::addInnerLayer(int numNodes, const Layer& previousLayer)
@@ -181,18 +204,27 @@ namespace NeuralNetwork
     bool NodeNetwork::computeValues()
     {
         // starting at the input layer and moving towards the output layer, update each node
-        for (auto& layer : m_layers)
+        for (unsigned int k = 1; k < m_layers.size(); k++)
         {
+            auto& layer = m_layers[k];
             for (auto& node : layer)
             {
-                (*node).updateValue(m_acceptanceFunction);
+                if (k + 1 == m_layers.size())
+                {
+                    // don't apply activation function to output layer
+                    (*node).updateValue(identityActivationFunction);
+                }
+                else
+                {
+                    (*node).updateValue(m_activationFunction);
+                }
             }
         }
 
         return true;
     }
 
-    int NodeNetwork::getOutputValues(std::vector<double>& outputValues) const
+    int NodeNetwork::getOutputValues(std::vector<double>& outputValues, bool applySoftMax) const
     {
         assert(m_layers.size() >= 2);
 
@@ -201,15 +233,30 @@ namespace NeuralNetwork
         int bestIndex = 0;
         const Layer& outputLayer = m_layers[m_layers.size() - 1];
 
+        double softMaxSum = 0;
         for (int k = 0; k < outputLayer.size(); k++)
         {
-            const double value = outputLayer[k]->getValue();
+            double value = outputLayer[k]->getValue();
             if (value > outputLayer[bestIndex]->getValue())
             {
                 bestIndex = k;
             }
 
+            if (applySoftMax)
+            {
+                value = std::exp(value);
+                softMaxSum += value;
+            }
+
             outputValues.push_back(value);
+        }
+
+        if (applySoftMax)
+        {
+            for (auto& val : outputValues)
+            {
+                val /= softMaxSum;
+            }
         }
 
         return bestIndex;
@@ -237,33 +284,60 @@ namespace NeuralNetwork
             buffer << m_layers[k].size();
         }
 
-        buffer << std::endl << "  acceptance function type: " << m_acceptanceFunctionType;
+        buffer << std::endl << "  activation function type: " << m_activationFunctionType;
         buffer << std::endl;
 
         PRINT_LOG(buffer);
     }
 
-    double NodeNetwork::noAcceptanceFunction(double val)
+    double NodeNetwork::identityActivationFunction(double val)
     {
         return val;
     }
 
-    double NodeNetwork::sigmoidAcceptanceFunction(double val)
+    double NodeNetwork::sigmoidActivationFunction(double val)
     {
         // A sigmoid function is a mathematical function having a characteristic "S"-shaped curve or sigmoid curve. 
         // Often, sigmoid function refers to the special case of the logistic function  defined by the formula
         // S(x) = 1 / (1 + e^(-1x)) = e^x / (1 + e^x)
+        // Note that the sigmoid output is centered around 0.5 and its range is in [0, 1].
 
         const double e = std::exp(val);
+        if (e == INFINITY)
+        {
+            return 1;
+        }
+
         return e / (e + 1);
     }
 
-    double NodeNetwork::reluAcceptanceFunction(double val)
+    double NodeNetwork::hyperbolicTanActivationFunction(double val)
+    {
+        // Hyperbolic Tangent Activation Function: 
+        // The tanh(z) function is a rescaled version of the sigmoid, and its output range is[-1, 1] instead of[0, 1].
+
+        return 2 * sigmoidActivationFunction(2 * val) - 1;
+    }
+
+    double NodeNetwork::reluActivationFunction(double val)
     {
         // ReLU = rectified linear unit
         // In the context of artificial neural networks, the rectifier is an activation function defined as the positive part of its argument:
         // f(x) = x^(+) = max(0, x)
 
         return std::max<double>(0, val);
+    }
+
+    double NodeNetwork::leakyReluActivationFunction(double val)
+    {
+        // Leaky ReLUs are one attempt to fix the "dying ReLU" problem. 
+        // Instead of the function being zero when x < 0, a leaky ReLU will instead have a small negative slope (of 0.01, or so).
+
+        if (val < 0)
+        {
+            return val * LEAKY_RELU_MULTIPLIER;
+        }
+
+        return val;
     }
 }
