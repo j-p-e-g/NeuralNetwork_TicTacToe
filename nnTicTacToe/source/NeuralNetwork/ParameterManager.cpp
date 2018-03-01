@@ -34,7 +34,7 @@ namespace NeuralNetwork
         buffer << std::endl << "  mutation replacement chance during evolution: " << m_paramData.mutationReplacementChance;
         buffer << std::endl << "  mutation bonus chance during evolution: " << m_paramData.mutationBonusChance;
         buffer << std::endl << "  mutation bonus scale during evolution: " << m_paramData.mutationBonusScale;
-        buffer << std::endl << "  mutation bonus within [ " << m_paramData.minRandomParamValue * m_paramData.mutationBonusScale 
+        buffer << std::endl << "  mutation bonus within [" << m_paramData.minRandomParamValue * m_paramData.mutationBonusScale 
                             << ", " << m_paramData.maxRandomParamValue * m_paramData.mutationBonusScale << "]";
         buffer << std::endl << "  number of best sets kept during evolution: " << m_paramData.numBestSetsKeptDuringEvolution;
         buffer << std::endl << "  number of best sets mutated during evolution: " << m_paramData.numBestSetsMutatedDuringEvolution;

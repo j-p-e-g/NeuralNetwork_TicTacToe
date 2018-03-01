@@ -22,12 +22,15 @@ namespace NeuralNetwork
 
     void NodeNetwork::destroyNetwork()
     {
-        for (auto& l : m_layers)
+        m_inputLayer.clear();
+        m_outputLayer.clear();
+
+        for (auto& l : m_hiddenLayers)
         {
             l.clear();
         }
 
-        m_layers.clear();
+        m_hiddenLayers.clear();
     }
 
     bool NodeNetwork::createNetwork(const NetworkSizeData& sizeData, const std::string& activationFunctionType)
@@ -45,15 +48,13 @@ namespace NeuralNetwork
 
         assignActivationFunction(activationFunctionType);
 
-        Layer prevLayer; // initially empty
         for (int k = 0; k < sizeData.numInputNodes; k++)
         {
             std::shared_ptr<Node> node = std::make_shared<Node>();
-            prevLayer.push_back(node);
+            m_inputLayer.push_back(node);
         }
 
-        m_layers.push_back(prevLayer);
-
+        Layer prevLayer = m_inputLayer;
         for (auto nh : sizeData.numHiddenNodes)
         {
             if (nh <= 0)
@@ -62,12 +63,13 @@ namespace NeuralNetwork
                 return false;
             }
 
-            prevLayer = addInnerLayer(nh, prevLayer);
+            prevLayer = createInnerLayer(nh, prevLayer);
+            m_hiddenLayers.push_back(prevLayer);
         }
 
-        addInnerLayer(sizeData.numOutputNodes, prevLayer);
-        describeNetwork();
+        m_outputLayer = createInnerLayer(sizeData.numOutputNodes, prevLayer);
 
+        describeNetwork();
         return true;
     }
 
@@ -104,7 +106,7 @@ namespace NeuralNetwork
         }
     }
 
-    Layer NodeNetwork::addInnerLayer(int numNodes, const Layer& previousLayer)
+    Layer NodeNetwork::createInnerLayer(int numNodes, const Layer& previousLayer)
     {
         assert(numNodes > 0);
 
@@ -124,8 +126,6 @@ namespace NeuralNetwork
             newLayer.push_back(node);
         }
 
-        m_layers.push_back(newLayer);
-
         return newLayer;
     }
 
@@ -133,7 +133,7 @@ namespace NeuralNetwork
     {
         int paramCount = 0;
 
-        for (auto& layer : m_layers)
+        for (auto& layer : m_hiddenLayers)
         {
             for (auto& node : layer)
             {
@@ -141,25 +141,29 @@ namespace NeuralNetwork
             }
         }
 
+        for (auto& node : m_outputLayer)
+        {
+            paramCount += node->getNumParameters();
+        }
+
         return paramCount;
     }
 
     bool NodeNetwork::assignInputValues(const std::vector<double>& inputValues)
     {
-        assert(m_layers.size() >= 2);
+        assert(!m_inputLayer.empty());
 
-        Layer& inputLayer = m_layers[0];
-        if (inputLayer.size() != inputValues.size())
+        if (m_inputLayer.size() != inputValues.size())
         {
             std::ostringstream buffer;
-            buffer << "Mismatch between number of input values (" << inputValues.size() << ") and input nodes (" << inputLayer.size() << ")!";
+            buffer << "Mismatch between number of input values (" << inputValues.size() << ") and input nodes (" << m_inputLayer.size() << ")!";
             PRINT_ERROR(buffer);
             return false;
         }
 
-        for (int k = 0; k < inputLayer.size(); k++)
+        for (int k = 0; k < m_inputLayer.size(); k++)
         {
-            inputLayer[k]->setValue(inputValues[k]);
+            m_inputLayer[k]->setValue(inputValues[k]);
         }
 
         return true;
@@ -187,7 +191,7 @@ namespace NeuralNetwork
             return false;
         }
 
-        for (auto& layer : m_layers)
+        for (auto& layer : m_hiddenLayers)
         {
             for (auto& node : layer)
             {
@@ -198,27 +202,32 @@ namespace NeuralNetwork
             }
         }
 
+        for (auto& node : m_outputLayer)
+        {
+            if (!(*node).assignParameters(params))
+            {
+                return false;
+            }
+        }
+
         return true;
     }
 
     bool NodeNetwork::computeValues()
     {
         // starting at the input layer and moving towards the output layer, update each node
-        for (unsigned int k = 1; k < m_layers.size(); k++)
+        for (auto& layer : m_hiddenLayers)
         {
-            auto& layer = m_layers[k];
             for (auto& node : layer)
             {
-                if (k + 1 == m_layers.size())
-                {
-                    // don't apply activation function to output layer
-                    (*node).updateValue(identityActivationFunction);
-                }
-                else
-                {
-                    (*node).updateValue(m_activationFunction);
-                }
+                (*node).updateValue(m_activationFunction);
             }
+        }
+
+        // don't apply activation function to output layer
+        for (auto& node : m_outputLayer)
+        {
+            (*node).updateValue(identityActivationFunction);
         }
 
         return true;
@@ -226,18 +235,17 @@ namespace NeuralNetwork
 
     int NodeNetwork::getOutputValues(std::vector<double>& outputValues, bool applySoftMax) const
     {
-        assert(m_layers.size() >= 2);
+        assert(!m_inputLayer.empty());
+        assert(!m_outputLayer.empty());
 
         outputValues.clear();
 
         int bestIndex = 0;
-        const Layer& outputLayer = m_layers[m_layers.size() - 1];
-
         double softMaxSum = 0;
-        for (int k = 0; k < outputLayer.size(); k++)
+        for (int k = 0; k < m_outputLayer.size(); k++)
         {
-            double value = outputLayer[k]->getValue();
-            if (value > outputLayer[bestIndex]->getValue())
+            double value = m_outputLayer[k]->getValue();
+            if (value > m_outputLayer[bestIndex]->getValue())
             {
                 bestIndex = k;
             }
@@ -264,24 +272,29 @@ namespace NeuralNetwork
 
     void NodeNetwork::describeNetwork() const
     {
-        assert(m_layers.size() >= 2);
+        assert(!m_inputLayer.empty());
+        assert(!m_outputLayer.empty());
 
         std::ostringstream buffer;
         buffer << "NodeNetwork: ";
-        buffer << std::endl << "  #layers: " << m_layers.size();
-        
-        buffer << std::endl << "  #input nodes: " << m_layers[0].size();
-        buffer << std::endl << "  #output nodes: " << m_layers[m_layers.size()-1].size();
+        buffer << std::endl << "  #layers: " << (2 + m_hiddenLayers.size());
+        buffer << std::endl << "  #input nodes: " << m_inputLayer.size();
+        buffer << std::endl << "  #output nodes: " << m_outputLayer.size();
 
         buffer << std::endl << "  #hidden layer nodes: ";
-        for (unsigned int k = 1; k < m_layers.size() - 1; k++)
+        bool first = true;
+        for (const auto& layer : m_hiddenLayers)
         {
-            if (k > 1)
+            if (first)
+            {
+                first = false;
+            }
+            else
             {
                 buffer << ", ";
             }
 
-            buffer << m_layers[k].size();
+            buffer << layer.size();
         }
 
         buffer << std::endl << "  activation function type: " << m_activationFunctionType;

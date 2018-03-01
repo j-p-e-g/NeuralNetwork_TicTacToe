@@ -64,11 +64,13 @@ namespace NeuralNetwork
         static double leakyReluActivationFunction(double val);
 
     private:
-        Layer addInnerLayer(int numNodes, const Layer& previousLayer);
+        Layer createInnerLayer(int numNodes, const Layer& previousLayer);
 
     private:
         std::string m_activationFunctionType;
         std::function<double(double)> m_activationFunction;
-        std::vector<Layer> m_layers;
+        Layer m_inputLayer;
+        std::vector<Layer> m_hiddenLayers;
+        Layer m_outputLayer;
     };
 }
