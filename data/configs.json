@@ -11,7 +11,10 @@
     "num_best_sets_kept_during_evolution": 2,
     "num_best_sets_mutated_during_evolution": 7,
     "num_random_sets_added_during_evolution": 1,
-    "mutation_replacement_chance": 0.02,
+    "mutation_replacement_chance": 0.005,
     "mutation_bonus_chance": 0.02,
-    "mutation_bonus_scale": 0.2
+    "mutation_bonus_scale": 0.2,
+    "mutation_rate_iteration_multiplier": 0.1,
+    "max_mutation_replacement_chance": 0.02,
+    "max_mutation_bonus_chance": 0.2
 }

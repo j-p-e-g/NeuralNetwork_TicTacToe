@@ -43,6 +43,15 @@ struct ParameterManagerData
     /// in the parameter set evolution step
     double mutationBonusScale = 1;
 
+    /// defines how much the mutation rates are increased each iteration that the best id doesn't change
+    double mutationRateIterationMultiplier = 1;
+
+    /// the maximum the mutation bonus chance can reach after lots of iterations without improvement
+    double maxMutationBonusChance = 1;
+
+    /// the maximum the mutation replacement chance can reach after lots of iterations without improvement
+    double maxMutationReplacementChance = 1;
+
     int numBestSetsKeptDuringEvolution = 1; /// number of the top parameter sets (sorted by score) copied over from the previous iteration
     int numBestSetsMutatedDuringEvolution = 1; /// number of sets newly created by mutating the best sets from the previous iteration
     int numAddedRandomSetsDuringEvolution = 1; /// number of random sets newly added at each evolution step

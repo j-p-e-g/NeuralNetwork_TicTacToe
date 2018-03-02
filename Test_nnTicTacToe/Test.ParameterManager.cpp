@@ -211,6 +211,80 @@ namespace ParameterManagerTest
             Assert::AreEqual(true, found1->second < found2->second);
         }
 
+        TEST_METHOD(ParameterManager_updateEffectiveMutationRates_default)
+        {
+            ParameterManagerData data;
+            data.mutationReplacementChance = 0.0025;
+            data.mutationBonusChance = 0.03;
+            data.mutationBonusScale = 0.7;
+            data.maxMutationBonusChance = 0.8;
+            data.maxMutationReplacementChance = 0.45;
+            data.mutationRateIterationMultiplier = 0.1;
+
+            // by default, the effective rates should be identical to the base rates
+            ParameterManager pm(data);
+            Assert::AreEqual(data.mutationReplacementChance, pm.getEffectiveReplacementMutationChance(), 0.0001);
+            Assert::AreEqual(data.mutationBonusChance, pm.getEffectiveBonusMutationChance(), 0.0001);
+        }
+
+        TEST_METHOD(ParameterManager_updateEffectiveMutationRates_sameId)
+        {
+            ParameterManagerData data;
+            data.mutationReplacementChance = 0.02;
+            data.mutationBonusChance = 0.1;
+            data.mutationBonusScale = 1;
+            data.maxMutationBonusChance = 0.5;
+            data.maxMutationReplacementChance = 0.2;
+            data.mutationRateIterationMultiplier = 0.5;
+
+            ParameterManager pm(data);
+
+            // fake iterations with the same best set id 3 times in a row
+            for (int k = 0; k < 4; k++)
+            {
+                pm.updateEffectiveMutationRates(5);
+            }
+
+            Assert::AreEqual(0.05, pm.getEffectiveReplacementMutationChance(), 0.0001);
+            Assert::AreEqual(0.25, pm.getEffectiveBonusMutationChance(), 0.0001);
+
+            // fake some more iterations with the same best set
+            for (int k = 0; k < 50; k++)
+            {
+                pm.updateEffectiveMutationRates(5);
+            }
+
+            // capped by maximum
+            Assert::AreEqual(data.maxMutationReplacementChance, pm.getEffectiveReplacementMutationChance(), 0.0001);
+            Assert::AreEqual(data.maxMutationBonusChance, pm.getEffectiveBonusMutationChance(), 0.0001);
+        }
+
+        TEST_METHOD(ParameterManager_updateEffectiveMutationRates_idChanged)
+        {
+            ParameterManagerData data;
+            data.mutationReplacementChance = 0.01;
+            data.mutationBonusChance = 0.05;
+            data.mutationBonusScale = 0.5;
+            data.maxMutationReplacementChance = 0.1;
+            data.maxMutationBonusChance = 0.25;
+            data.mutationRateIterationMultiplier = 0.5;
+
+            ParameterManager pm(data);
+
+            // fake iterations with the same set id a couple of times
+            for (int k = 0; k < 5; k++)
+            {
+                pm.updateEffectiveMutationRates(19);
+            }
+
+            // change to a different "best id"
+            pm.updateEffectiveMutationRates(2);
+
+            // should be back at the initial values
+            Assert::AreEqual(data.mutationReplacementChance, pm.getEffectiveReplacementMutationChance(), 0.0001);
+            Assert::AreEqual(data.mutationBonusChance, pm.getEffectiveBonusMutationChance(), 0.0001);
+        }
+
         TEST_METHOD(ParameterManager_getMutatedValue_noMutation_chances)
         {
             ParameterManagerData data;

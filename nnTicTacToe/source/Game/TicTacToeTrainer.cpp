@@ -50,7 +50,10 @@ namespace Game
 
         m_paramData.mutationReplacementChance = j.at("mutation_replacement_chance").get<double>();
         m_paramData.mutationBonusChance = j.at("mutation_bonus_chance").get<double>();
+        m_paramData.maxMutationReplacementChance = j.at("max_mutation_replacement_chance").get<double>();
+        m_paramData.maxMutationBonusChance = j.at("max_mutation_bonus_chance").get<double>();
         m_paramData.mutationBonusScale = j.at("mutation_bonus_scale").get<double>();
+        m_paramData.mutationRateIterationMultiplier = j.at("mutation_rate_iteration_multiplier").get<double>();
 
         m_paramData.numBestSetsKeptDuringEvolution = j.at("num_best_sets_kept_during_evolution").get<int>();
         m_paramData.numBestSetsMutatedDuringEvolution = j.at("num_best_sets_mutated_during_evolution").get<int>();
@@ -89,38 +92,9 @@ namespace Game
             PRINT_ERROR("Failed to read config values");
         }
 
-        if (m_paramData.minRandomParamValue >= m_paramData.maxRandomParamValue)
+        if (!handleOptionValidation())
         {
-            std::ostringstream buffer;
-            buffer << "Option mismatch: min. random parameter value must be smaller than max. random parameter value (currently "
-                << m_paramData.minRandomParamValue << " and " << m_paramData.maxRandomParamValue << ", respectively)";
-            PRINT_ERROR(buffer);
             return false;
-        }
-
-        if (m_numIterations > 1)
-        {
-            const int numSpecialEvolutionSets = m_paramData.numBestSetsKeptDuringEvolution + m_paramData.numBestSetsMutatedDuringEvolution + m_paramData.numAddedRandomSetsDuringEvolution;
-
-            if (m_numParamSets <= numSpecialEvolutionSets)
-            {
-                std::ostringstream buffer;
-                buffer << "Option mismatch: the number of sets added during the evolution step (kept, mutated and randomly added; currently "
-                    << numSpecialEvolutionSets << ") may not be equal to or larger than the total number of sets (" 
-                    << m_numParamSets << "); otherwise iterating is pointless)";
-                PRINT_ERROR(buffer);
-                return false;
-            }
-
-            if (m_paramData.mutationBonusChance > 0 && m_paramData.mutationBonusScale == 0
-                || m_paramData.mutationBonusChance <= 0 && m_paramData.mutationBonusScale != 0)
-            {
-                std::ostringstream buffer;
-                buffer << "Warning: No mutation bonus will be applied during the evolution step because either the mutation chance ("
-                    << m_paramData.mutationBonusChance << ") or the bonus scale (" << m_paramData.mutationBonusScale << ") is zero";
-                std::cout << buffer.str() << std::endl;
-                PRINT_LOG(buffer);
-            }
         }
 
         describeTrainer();
@@ -688,4 +662,44 @@ namespace Game
         buffer << "dumped improvement stats to '" << relativePath.c_str() << "'";
         PRINT_LOG(buffer);
     }
+
+    bool TicTacToeTrainer::handleOptionValidation() const
+    {
+        if (m_paramData.minRandomParamValue >= m_paramData.maxRandomParamValue)
+        {
+            std::ostringstream buffer;
+            buffer << "Option mismatch: min. random parameter value must be smaller than max. random parameter value (currently "
+                << m_paramData.minRandomParamValue << " and " << m_paramData.maxRandomParamValue << ", respectively)";
+            PRINT_ERROR(buffer);
+            return false;
+        }
+
+        if (m_numIterations > 1)
+        {
+            const int numSpecialEvolutionSets = m_paramData.numBestSetsKeptDuringEvolution + m_paramData.numBestSetsMutatedDuringEvolution + m_paramData.numAddedRandomSetsDuringEvolution;
+
+            if (m_numParamSets <= numSpecialEvolutionSets)
+            {
+                std::ostringstream buffer;
+                buffer << "Option mismatch: the number of sets added during the evolution step (kept, mutated and randomly added; currently "
+                    << numSpecialEvolutionSets << ") may not be equal to or larger than the total number of sets ("
+                    << m_numParamSets << "); otherwise iterating is pointless)";
+                PRINT_ERROR(buffer);
+                return false;
+            }
+
+            if (m_paramData.mutationBonusChance > 0 && m_paramData.mutationBonusScale == 0
+                || m_paramData.mutationBonusChance <= 0 && m_paramData.mutationBonusScale != 0)
+            {
+                std::ostringstream buffer;
+                buffer << "Warning: No mutation bonus will be applied during the evolution step because either the mutation chance ("
+                    << m_paramData.mutationBonusChance << ") or the bonus scale (" << m_paramData.mutationBonusScale << ") is zero";
+                std::cout << buffer.str() << std::endl;
+                PRINT_LOG(buffer);
+            }
+        }
+
+        return true;
+    }
+
 }

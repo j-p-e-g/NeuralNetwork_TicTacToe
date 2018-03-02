@@ -28,8 +28,8 @@ namespace Game
 
     public:
         bool setup();
+        bool handleOptionValidation() const;
         void run();
-
         void handleTrainingIteration(int iteration);
 
     private:

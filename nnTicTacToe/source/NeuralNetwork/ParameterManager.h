@@ -35,6 +35,10 @@ namespace NeuralNetwork
         void removeParameterSetForId(int id);
 
         bool evolveParameterSets(int totalNumberOfSets, std::vector<int>& newParameterSetIds);
+        void updateEffectiveMutationRates(int newBestSetId);
+        double getEffectiveReplacementMutationChance() const { return m_effectiveMutationReplacementChance; }
+        double getEffectiveBonusMutationChance() const { return m_effectiveMutationBonusChance; }
+
         void fillParameterSetProbabilityMap(std::map<double, int> &probabilityMap);
         static int getIdByProbability(const std::map<double, int>& probabilityMap);
 
@@ -51,5 +55,10 @@ namespace NeuralNetwork
         std::map<int, ParamSet> m_paramSets;
         int m_nextId;
         bool m_executeMutationStep = true;
+
+        int m_currentBestSetId = -1;
+        int m_numIterationsBestIdUnchanged = 0;
+        double m_effectiveMutationReplacementChance = 0;
+        double m_effectiveMutationBonusChance = 0;
     };
 }

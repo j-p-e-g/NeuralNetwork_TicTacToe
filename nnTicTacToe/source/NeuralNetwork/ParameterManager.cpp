@@ -23,6 +23,9 @@ namespace NeuralNetwork
 
         // skip this step if there's no chance of actually tweaking any parameters
         m_executeMutationStep = (m_paramData.mutationReplacementChance > 0) || (m_paramData.mutationBonusChance > 0 && m_paramData.mutationBonusScale != 0);
+
+        // initialize mutation rates
+        updateEffectiveMutationRates(-1);
     }
 
     void ParameterManager::describeParameterManager() const
@@ -36,6 +39,9 @@ namespace NeuralNetwork
         buffer << std::endl << "  mutation bonus scale during evolution: " << m_paramData.mutationBonusScale;
         buffer << std::endl << "  mutation bonus within [" << m_paramData.minRandomParamValue * m_paramData.mutationBonusScale 
                             << ", " << m_paramData.maxRandomParamValue * m_paramData.mutationBonusScale << "]";
+        buffer << std::endl << "  mutation rate multiplier for iterations without improvement: " << m_paramData.mutationRateIterationMultiplier;
+        buffer << std::endl << "  max. mutation replacement chance during evolution: " << m_paramData.maxMutationReplacementChance;
+        buffer << std::endl << "  max. mutation bonus chance during evolution: " << m_paramData.maxMutationBonusChance;
         buffer << std::endl << "  number of best sets kept during evolution: " << m_paramData.numBestSetsKeptDuringEvolution;
         buffer << std::endl << "  number of best sets mutated during evolution: " << m_paramData.numBestSetsMutatedDuringEvolution;
         buffer << std::endl << "  number of random sets added during evolution: " << m_paramData.numAddedRandomSetsDuringEvolution;
@@ -222,6 +228,16 @@ namespace NeuralNetwork
 
         std::vector<int> bestParameterSetIds;
         getParameterSetIdsSortedByScore(bestParameterSetIds);
+        assert(bestParameterSetIds.size() > 1);
+
+        updateEffectiveMutationRates(bestParameterSetIds[0]);
+
+        if (m_numIterationsBestIdUnchanged > 0)
+        {
+            buffer << std::endl << " num. consecutive iterations without improvement: " << m_numIterationsBestIdUnchanged;
+            buffer << std::endl << " - effective mutation replacement chance: " << m_effectiveMutationReplacementChance;
+            buffer << std::endl << " - effective mutation bonus chance: " << m_effectiveMutationBonusChance;
+        }
 
         std::map<double, int> probabilityMap;
         fillParameterSetProbabilityMap(probabilityMap);
@@ -308,6 +324,45 @@ namespace NeuralNetwork
         }
 
         return true;
+    }
+
+    void ParameterManager::updateEffectiveMutationRates(int newBestSetId)
+    {
+        m_effectiveMutationReplacementChance = m_paramData.mutationReplacementChance;
+        m_effectiveMutationBonusChance = m_paramData.mutationBonusChance;
+
+        if (newBestSetId == -1 || m_paramData.mutationRateIterationMultiplier <= 0)
+        {
+            return;
+        }
+
+        if (newBestSetId == m_currentBestSetId)
+        {
+            m_numIterationsBestIdUnchanged++;
+        }
+        else
+        {
+            m_numIterationsBestIdUnchanged = 0;
+        }
+
+        m_currentBestSetId = newBestSetId;
+
+        if (m_numIterationsBestIdUnchanged <= 0)
+        {
+            return;
+        }
+
+        m_effectiveMutationReplacementChance *= (1 + m_numIterationsBestIdUnchanged * m_paramData.mutationRateIterationMultiplier);
+        if (m_effectiveMutationReplacementChance > m_paramData.maxMutationReplacementChance)
+        {
+            m_effectiveMutationReplacementChance = m_paramData.maxMutationReplacementChance;
+        }
+
+        m_effectiveMutationBonusChance *= (1 + m_numIterationsBestIdUnchanged * m_paramData.mutationRateIterationMultiplier);
+        if (m_effectiveMutationBonusChance > m_paramData.maxMutationBonusChance)
+        {
+            m_effectiveMutationBonusChance = m_paramData.maxMutationBonusChance;
+        }
     }
 
     void ParameterManager::fillParameterSetProbabilityMap(std::map<double, int> &probabilityMap)
@@ -427,12 +482,12 @@ namespace NeuralNetwork
         std::uniform_real_distribution<double> rndChance(0, 1);
         std::uniform_real_distribution<double> rndDist(m_paramData.minRandomParamValue, std::nextafter(m_paramData.maxRandomParamValue, DBL_MAX));
 
-        if (m_paramData.mutationReplacementChance > 0 && rndChance(gen) <= m_paramData.mutationReplacementChance)
+        if (m_effectiveMutationReplacementChance > 0 && rndChance(gen) <= m_effectiveMutationReplacementChance)
         {
             return rndDist(gen);
         }
 
-        if (m_paramData.mutationBonusChance > 0 && rndChance(gen) <= m_paramData.mutationBonusChance)
+        if (m_effectiveMutationBonusChance > 0 && rndChance(gen) <= m_effectiveMutationBonusChance)
         {
             // randomly tweak the parameter, but ensure that it's still between [min, max]
             const double newParam = param + rndDist(gen) * m_paramData.mutationBonusScale;
