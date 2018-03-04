@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CppUnitTest.h"
 #include "NeuralNetwork/Node.h"
+#include "NeuralNetwork/NodeNetwork.h"
 
 namespace NodeTest
 {
@@ -9,9 +10,6 @@ namespace NodeTest
 
     TEST_CLASS(NodeEdge_Test)
     {
-    private:
-        static double leaveValueUnchangedFunction(double val) { return val; };
-
     public:
         // -----------------------------------------
         // Node
@@ -142,7 +140,7 @@ namespace NodeTest
             Assert::AreEqual(true, params.empty());
 
             // should be equal to the new value (overwrites old value)
-            node->updateValue(leaveValueUnchangedFunction);
+            node->updateValue(NodeNetwork::identityActivationFunction);
             Assert::AreEqual(25.963, node->getValue());
         }
 
@@ -189,7 +187,7 @@ namespace NodeTest
             inputEdges.push_back(edgeB);
 
             std::shared_ptr<Node> node = std::make_shared<InnerNode>(InnerNode(inputEdges));
-            node->updateValue(leaveValueUnchangedFunction);
+            node->updateValue(NodeNetwork::identityActivationFunction);
 
             // should be the sum of both values
             Assert::AreEqual(-1.38, node->getValue(), 0.00001);
@@ -241,7 +239,7 @@ namespace NodeTest
             // should succeed
             std::queue<double> params = std::queue<double>({ 1.2, -4, 21 });
             Assert::AreEqual(true, node->assignParameters(params));
-            node->updateValue(leaveValueUnchangedFunction);
+            node->updateValue(NodeNetwork::identityActivationFunction);
 
             // nodeA * param1 + nodeB * param2 + param3
             // -12 + 2 + 21.6 = 11

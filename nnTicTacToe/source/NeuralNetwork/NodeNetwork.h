@@ -57,18 +57,18 @@ namespace NeuralNetwork
         void describeNetwork() const override;
 
     public:
-        static double identityActivationFunction(double val);
-        static double sigmoidActivationFunction(double val);
-        static double hyperbolicTanActivationFunction(double val);
-        static double reluActivationFunction(double val);
-        static double leakyReluActivationFunction(double val);
+        static double identityActivationFunction(double val, bool derivative = false);
+        static double sigmoidActivationFunction(double val, bool derivative = false);
+        static double hyperbolicTanActivationFunction(double val, bool derivative = false);
+        static double reluActivationFunction(double val, bool derivative = false);
+        static double leakyReluActivationFunction(double val, bool derivative = false);
 
     private:
         Layer createInnerLayer(int numNodes, const Layer& previousLayer);
 
     private:
         std::string m_activationFunctionType;
-        std::function<double(double)> m_activationFunction;
+        std::function<double(double, bool)> m_activationFunction;
         Layer m_inputLayer;
         std::vector<Layer> m_hiddenLayers;
         Layer m_outputLayer;

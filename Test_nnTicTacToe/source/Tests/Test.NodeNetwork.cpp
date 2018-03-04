@@ -380,5 +380,81 @@ namespace NodeNetworkTest
             Assert::AreEqual(true, tanh1 < tanh4);
             Assert::AreEqual(true, tanh4 < tanh7);
         }
+
+        //------------------------------------
+        // derived activation functions
+        //------------------------------------
+        TEST_METHOD(NodeNetwork_derivedIdentityActivationFunction)
+        {
+            // all values map to 1
+            Assert::AreEqual(1, NodeNetwork::identityActivationFunction(-9962.6536, true), 0.0001);
+            Assert::AreEqual(1, NodeNetwork::identityActivationFunction(-0.0714, true), 0.0001);
+            Assert::AreEqual(1, NodeNetwork::identityActivationFunction(0, true), 0.0001);
+            Assert::AreEqual(1, NodeNetwork::identityActivationFunction(0.00005, true), 0.0001);
+            Assert::AreEqual(1, NodeNetwork::identityActivationFunction(7632.24, true), 0.0001);
+        }
+
+        TEST_METHOD(NodeNetwork_derivedReluActivationFunction)
+        {
+            // negative values map to 0
+            Assert::AreEqual(0, NodeNetwork::reluActivationFunction(-1468.82, true), 0.0001);
+            Assert::AreEqual(0, NodeNetwork::reluActivationFunction(-0.000014, true), 0.0001);
+
+            // non-negative values map to 1
+            Assert::AreEqual(1, NodeNetwork::reluActivationFunction(0, true), 0.0001);
+            Assert::AreEqual(1, NodeNetwork::reluActivationFunction(0.00252, true), 0.0001);
+            Assert::AreEqual(1, NodeNetwork::reluActivationFunction(16002.5, true), 0.0001);
+        }
+
+        TEST_METHOD(NodeNetwork_derivedLeakyReluActivationFunction)
+        {
+            // non-negative values map to 1
+            Assert::AreEqual(1, NodeNetwork::leakyReluActivationFunction(0, true), 0.0001);
+            Assert::AreEqual(1, NodeNetwork::leakyReluActivationFunction(0.02006, true), 0.0001);
+            Assert::AreEqual(1, NodeNetwork::leakyReluActivationFunction(34615.12, true), 0.0001);
+
+            // negative values map to the leaky modifier (0 < m << 1)
+            const double derivedRelu1 = NodeNetwork::leakyReluActivationFunction(-28968.3, true);
+            const double derivedRelu2 = NodeNetwork::leakyReluActivationFunction(-0.007, true);
+            Assert::AreEqual(true, derivedRelu1 == derivedRelu2);
+            Assert::AreEqual(true, 0 < derivedRelu1 && derivedRelu1 < 1);
+        }
+
+        TEST_METHOD(NodeNetwork_derivedSigmoidActivationFunction)
+        {
+            // the derivative of the sigmoid function looks Gaussian, centered around 0
+            // values are at least 0, and max. some value < 1
+            const double derivedSigmoidLeft = NodeNetwork::sigmoidActivationFunction(-255298.2, true);
+            const double derivedSigmoidCenterLeft = NodeNetwork::sigmoidActivationFunction(-0.0826, true);
+            const double derivedSigmoidCenter = NodeNetwork::sigmoidActivationFunction(0, true);
+            const double derivedSigmoidCenterRight = NodeNetwork::sigmoidActivationFunction(0.000211, true);
+            const double derivedSigmoidRight = NodeNetwork::sigmoidActivationFunction(1000000.0, true);
+
+            Assert::AreEqual(0, derivedSigmoidLeft, 0.0001);
+            Assert::AreEqual(0, derivedSigmoidRight, 0.0001);
+            Assert::AreEqual(true, derivedSigmoidCenter > derivedSigmoidCenterLeft);
+            Assert::AreEqual(true, derivedSigmoidCenter > derivedSigmoidCenterRight);
+            Assert::AreEqual(true, derivedSigmoidCenterLeft >= derivedSigmoidLeft);
+            Assert::AreEqual(true, derivedSigmoidCenterRight >= derivedSigmoidRight);
+        }
+
+        TEST_METHOD(NodeNetwork_derivedHyperbolicTanActivationFunction)
+        {
+            // the derivative of tanh is also centered around 0 but the slope is much steeper
+            // values are in [0, 1]
+            const double derivedTanhLeft = NodeNetwork::hyperbolicTanActivationFunction(-863200.54, true);
+            const double derivedTanhCenterLeft = NodeNetwork::hyperbolicTanActivationFunction(-0.00035, true);
+            const double derivedTanhCenter = NodeNetwork::hyperbolicTanActivationFunction(0, true);
+            const double derivedTanhCenterRight = NodeNetwork::hyperbolicTanActivationFunction(0.009999, true);
+            const double derivedTanhRight = NodeNetwork::hyperbolicTanActivationFunction(11111.8, true);
+
+            Assert::AreEqual(0, derivedTanhLeft, 0.0001);
+            Assert::AreEqual(0, derivedTanhRight, 0.0001);
+            Assert::AreEqual(1, derivedTanhCenter, 0.001);
+            Assert::AreEqual(true, derivedTanhCenter > derivedTanhCenterLeft);
+            Assert::AreEqual(true, derivedTanhCenter > derivedTanhCenterRight);
+            Assert::AreEqual(true, derivedTanhCenterLeft >= derivedTanhLeft);
+            Assert::AreEqual(true, derivedTanhCenterRight >= derivedTanhRight);
+        }
     };
 }
