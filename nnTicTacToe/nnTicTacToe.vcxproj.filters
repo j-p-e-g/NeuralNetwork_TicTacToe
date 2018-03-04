@@ -20,6 +20,9 @@
     <Filter Include="General">
       <UniqueIdentifier>{0198412d-35f1-437b-b1da-ba1642aedd1d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Training">
+      <UniqueIdentifier>{3410970b-737f-4be5-8bed-4a6773273a4d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\nnTicTacToe.cpp">
@@ -43,11 +46,14 @@
     <ClCompile Include="source\Game\GameLogic.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="source\Game\TicTacToeTrainer.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="source\Game\Player.cpp">
       <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Training\BaseTrainer.cpp">
+      <Filter>Training</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Training\TicTacToeTrainer.cpp">
+      <Filter>Training</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -75,11 +81,14 @@
     <ClInclude Include="source\General\Globals.h">
       <Filter>General</Filter>
     </ClInclude>
-    <ClInclude Include="source\Game\TicTacToeTrainer.h">
-      <Filter>Game</Filter>
-    </ClInclude>
     <ClInclude Include="source\Game\Player.h">
       <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Training\BaseTrainer.h">
+      <Filter>Training</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Training\TicTacToeTrainer.h">
+      <Filter>Training</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

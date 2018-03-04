@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "CppUnitTest.h"
 
-#include "Game/TicTacToeTrainer.h"
+#include "Training/TicTacToeTrainer.h"
 #include "NeuralNetwork/ParameterManager.h"
 
 #include <set>
@@ -10,6 +10,7 @@ namespace TicTacToeTrainerTest
 {
     using namespace Microsoft::VisualStudio::CppUnitTestFramework;
     using namespace Game;
+    using namespace Training;
 
     TEST_CLASS(TicTacToeTrainer_Test)
     {

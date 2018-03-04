@@ -25,6 +25,9 @@
     <Filter Include="Resource Files\FileIO">
       <UniqueIdentifier>{bfd1f4c8-fe01-46b3-8031-b618a3603c8b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Training">
+      <UniqueIdentifier>{3e619907-00ee-458a-8beb-fc4c61fe7a73}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\nnTicTacToe\source\NeuralNetwork\Node.cpp">
@@ -63,11 +66,14 @@
     <ClCompile Include="Test.Player.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\nnTicTacToe\source\Game\TicTacToeTrainer.cpp">
-      <Filter>Resource Files\Game</Filter>
-    </ClCompile>
     <ClCompile Include="Test.TicTacToeTrainer.cpp">
       <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nnTicTacToe\source\Training\BaseTrainer.cpp">
+      <Filter>Resource Files\Training</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nnTicTacToe\source\Training\TicTacToeTrainer.cpp">
+      <Filter>Resource Files\Training</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -95,8 +101,11 @@
     <ClInclude Include="..\nnTicTacToe\source\Game\Player.h">
       <Filter>Resource Files\Game</Filter>
     </ClInclude>
-    <ClInclude Include="..\nnTicTacToe\source\Game\TicTacToeTrainer.h">
-      <Filter>Resource Files\Game</Filter>
+    <ClInclude Include="..\nnTicTacToe\source\Training\BaseTrainer.h">
+      <Filter>Resource Files\Training</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nnTicTacToe\source\Training\TicTacToeTrainer.h">
+      <Filter>Resource Files\Training</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
