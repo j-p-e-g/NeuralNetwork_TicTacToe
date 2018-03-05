@@ -182,7 +182,7 @@ namespace NeuralNetwork
 
     bool NodeNetwork::assignParameters(std::queue<double> params)
     {
-        const size_t expectedParameters = getNumParameters();
+        const int expectedParameters = getNumParameters();
         if (expectedParameters != params.size())
         {
             std::ostringstream buffer;
@@ -211,6 +211,24 @@ namespace NeuralNetwork
         }
 
         return true;
+    }
+
+    void NodeNetwork::getParameters(std::vector<double>& params) const
+    {
+        params.clear();
+
+        for (auto& layer : m_hiddenLayers)
+        {
+            for (auto& node : layer)
+            {
+                (*node).getParameters(params);
+            }
+        }
+
+        for (auto& node : m_outputLayer)
+        {
+            (*node).getParameters(params);
+        }
     }
 
     bool NodeNetwork::computeValues()
@@ -268,6 +286,72 @@ namespace NeuralNetwork
         }
 
         return bestIndex;
+    }
+
+    double NodeNetwork::getTotalError(const std::vector<double>& targetValues) const
+    {
+        assert(m_outputLayer.size() == targetValues.size());
+
+        double error = 0;
+        for (unsigned int k = 0; k < m_outputLayer.size(); k++)
+        {
+            error += m_outputLayer[k]->getError(targetValues[k]);
+        }
+
+        return error;
+    }
+
+    void NodeNetwork::handleBackpropagation(const std::vector<double>& targetValues, std::vector<double>& parameterAdjustments)
+    {
+        // during the backpropagation, all parameters get overwritten with their adjustment values, so
+        // we need to backup the real parameters
+        std::vector<double> initialParameters;
+        getParameters(initialParameters);
+
+        // do backpropagation for output layer
+        std::vector<double> inputAdjustments;
+        handleBackpropagation(m_outputLayer, targetValues, identityActivationFunction, inputAdjustments);
+
+        // compute average input adjustment
+        for (auto& val : inputAdjustments)
+        {
+            val /= m_outputLayer.size();
+        }
+
+        // do backpropagation for hidden layers
+        for (int k = static_cast<int>(m_hiddenLayers.size()) - 1; k >= 0; k--)
+        {
+            std::vector<double> innerNodeTargetValues;
+            for (unsigned int n = 0; n < m_hiddenLayers[k].size(); n++)
+            {
+                const auto& node = m_hiddenLayers[k][n];
+                innerNodeTargetValues.push_back(node->getValue() + inputAdjustments[n]);
+            }
+
+            handleBackpropagation(m_hiddenLayers[k], innerNodeTargetValues, m_activationFunction, inputAdjustments);
+
+            // compute average input adjustment
+            for (auto& val : inputAdjustments)
+            {
+                val /= m_hiddenLayers[k].size();
+            }
+        }
+
+        getParameters(parameterAdjustments);
+
+        // write back the real parameters
+        assignParameters(initialParameters);
+    }
+
+    void NodeNetwork::handleBackpropagation(Layer& layer, const std::vector<double>& targetValues, std::function<double(double, bool)> activationFunction, std::vector<double>& inputAdjustments)
+    {
+        assert(targetValues.size() == layer.size());
+
+        inputAdjustments.clear();
+        for (unsigned int k = 0; k < layer.size(); k++)
+        {
+            layer[k]->handleBackpropagation(targetValues[k], activationFunction, inputAdjustments);
+        }
     }
 
     void NodeNetwork::describeNetwork() const
@@ -370,7 +454,7 @@ namespace NeuralNetwork
     double NodeNetwork::leakyReluActivationFunction(double val, bool derivative)
     {
         // Leaky ReLUs are one attempt to fix the "dying ReLU" problem. 
-        // Instead of the function being zero when x < 0, a leaky ReLU will instead have a small negative slope (of 0.01, or so).
+        // Instead of the function being zero when x < 0, a leaky ReLU will instead have a small slope (of 0.01, or so) to the left of the y axis.
 
         if (derivative)
         {
