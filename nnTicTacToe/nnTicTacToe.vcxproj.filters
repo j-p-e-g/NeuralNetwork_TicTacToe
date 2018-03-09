@@ -23,6 +23,9 @@
     <Filter Include="Training">
       <UniqueIdentifier>{3410970b-737f-4be5-8bed-4a6773273a4d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{68575d13-7434-456e-a894-3a453c8b56e1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\nnTicTacToe.cpp">
@@ -54,6 +57,9 @@
     </ClCompile>
     <ClCompile Include="source\Training\TicTacToeTrainer.cpp">
       <Filter>Training</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Math\ActivationFunctions.cpp">
+      <Filter>Math</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -89,6 +95,9 @@
     </ClInclude>
     <ClInclude Include="source\Training\TicTacToeTrainer.h">
       <Filter>Training</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Math\ActivationFunctions.h">
+      <Filter>Math</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,11 +1,12 @@
 #include "stdafx.h"
 #include "CppUnitTest.h"
+#include "Math/ActivationFunctions.h"
 #include "NeuralNetwork/Node.h"
-#include "NeuralNetwork/NodeNetwork.h"
 
 namespace NodeTest
 {
     using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+    using namespace Math;
     using namespace NeuralNetwork;
 
     TEST_CLASS(NodeEdge_Test)
@@ -163,7 +164,7 @@ namespace NodeTest
             Assert::AreEqual(true, params.empty());
 
             // should be equal to the new value (overwrites old value)
-            node->updateValue(NodeNetwork::identityActivationFunction);
+            node->updateValue(ActivationFunctions::identity);
             Assert::AreEqual(25.963, node->getValue());
 
             // check parameters
@@ -225,7 +226,7 @@ namespace NodeTest
             inputEdges.push_back(edgeB);
 
             std::shared_ptr<Node> node = std::make_shared<InnerNode>(InnerNode(inputEdges));
-            node->updateValue(NodeNetwork::identityActivationFunction);
+            node->updateValue(ActivationFunctions::identity);
 
             // should be the sum of both values
             Assert::AreEqual(-1.38, node->getValue(), 0.00001);
@@ -277,7 +278,7 @@ namespace NodeTest
             // should succeed
             std::queue<double> params = std::queue<double>({ 1.2, -4, 21 });
             Assert::AreEqual(true, node->assignParameters(params));
-            node->updateValue(NodeNetwork::identityActivationFunction);
+            node->updateValue(ActivationFunctions::identity);
 
             // nodeA * param1 + nodeB * param2 + param3
             // -12 + 2 + 21.6 = 11
@@ -372,13 +373,13 @@ namespace NodeTest
 
             // if the targetValue is equal to the output value, 
             // all adjustment values should be zero
-            node->updateValue(NodeNetwork::identityActivationFunction);
+            node->updateValue(ActivationFunctions::identity);
             const double result = node->getValue();
 
             std::vector<double> inputValueAdjustments;
             std::vector<double> paramAdjustments;
 
-            node->handleBackpropagation(result, NodeNetwork::identityActivationFunction, inputValueAdjustments);
+            node->handleBackpropagation(result, ActivationFunctions::identity, inputValueAdjustments);
             node->getParameters(paramAdjustments);
 
             Assert::AreEqual(2, static_cast<int>(inputValueAdjustments.size()));
@@ -418,13 +419,13 @@ namespace NodeTest
 
             // if the targetValue is different from the output value, 
             // all adjustment values are highly likely to be non-zero
-            node->updateValue(NodeNetwork::leakyReluActivationFunction);
+            node->updateValue(ActivationFunctions::leakyRelu);
             const double result = node->getValue();
 
             std::vector<double> inputValueAdjustments;
             std::vector<double> paramAdjustments;
 
-            node->handleBackpropagation(result + 0.08, NodeNetwork::leakyReluActivationFunction, inputValueAdjustments);
+            node->handleBackpropagation(result + 0.08, ActivationFunctions::leakyRelu, inputValueAdjustments);
             node->getParameters(paramAdjustments);
 
             Assert::AreEqual(2, static_cast<int>(inputValueAdjustments.size()));

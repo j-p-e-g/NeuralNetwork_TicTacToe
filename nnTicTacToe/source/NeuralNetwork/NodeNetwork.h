@@ -62,13 +62,6 @@ namespace NeuralNetwork
         int getNumParameters() const;
         void describeNetwork() const override;
 
-    public:
-        static double identityActivationFunction(double val, bool derivative = false);
-        static double sigmoidActivationFunction(double val, bool derivative = false);
-        static double hyperbolicTanActivationFunction(double val, bool derivative = false);
-        static double reluActivationFunction(double val, bool derivative = false);
-        static double leakyReluActivationFunction(double val, bool derivative = false);
-
     private:
         Layer createInnerLayer(int numNodes, const Layer& previousLayer);
 

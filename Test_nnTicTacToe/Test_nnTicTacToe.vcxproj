@@ -157,6 +157,7 @@
     <ClCompile Include="..\nnTicTacToe\source\FileIO\FileManager.cpp" />
     <ClCompile Include="..\nnTicTacToe\source\Game\GameLogic.cpp" />
     <ClCompile Include="..\nnTicTacToe\source\Game\Player.cpp" />
+    <ClCompile Include="..\nnTicTacToe\source\Math\ActivationFunctions.cpp" />
     <ClCompile Include="..\nnTicTacToe\source\NeuralNetwork\Node.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
@@ -169,23 +170,19 @@
     <ClCompile Include="..\nnTicTacToe\source\Training\BaseTrainer.cpp" />
     <ClCompile Include="..\nnTicTacToe\source\Training\TicTacToeTrainer.cpp" />
     <ClCompile Include="source\stdafx.cpp" />
-    <ClCompile Include="source\Tests\Test.Node.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="source\Tests\Test.NodeNetwork.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="Test.GameLogic.cpp" />
-    <ClCompile Include="Test.ParameterManager.cpp" />
-    <ClCompile Include="Test.Player.cpp" />
-    <ClCompile Include="Test.TicTacToeTrainer.cpp" />
+    <ClCompile Include="source\Tests\Test.ActivationFunctions.cpp" />
+    <ClCompile Include="source\Tests\Test.GameLogic.cpp" />
+    <ClCompile Include="source\Tests\Test.Node.cpp" />
+    <ClCompile Include="source\Tests\Test.NodeNetwork.cpp" />
+    <ClCompile Include="source\Tests\Test.ParameterManager.cpp" />
+    <ClCompile Include="source\Tests\Test.Player.cpp" />
+    <ClCompile Include="source\Tests\Test.TicTacToeTrainer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\nnTicTacToe\source\FileIO\FileManager.h" />
     <ClInclude Include="..\nnTicTacToe\source\Game\GameLogic.h" />
     <ClInclude Include="..\nnTicTacToe\source\Game\Player.h" />
+    <ClInclude Include="..\nnTicTacToe\source\Math\ActivationFunctions.h" />
     <ClInclude Include="..\nnTicTacToe\source\NeuralNetwork\Node.h" />
     <ClInclude Include="..\nnTicTacToe\source\NeuralNetwork\NodeNetwork.h" />
     <ClInclude Include="..\nnTicTacToe\source\NeuralNetwork\ParameterManager.h" />

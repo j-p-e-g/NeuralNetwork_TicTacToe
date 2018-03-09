@@ -28,6 +28,9 @@
     <Filter Include="Resource Files\Training">
       <UniqueIdentifier>{3e619907-00ee-458a-8beb-fc4c61fe7a73}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Math">
+      <UniqueIdentifier>{0e3ce04a-478e-405f-a966-ff778fc358e3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\nnTicTacToe\source\NeuralNetwork\Node.cpp">
@@ -36,23 +39,11 @@
     <ClCompile Include="..\nnTicTacToe\source\NeuralNetwork\NodeNetwork.cpp">
       <Filter>Resource Files\NodeNetwork</Filter>
     </ClCompile>
-    <ClCompile Include="source\Tests\Test.Node.cpp">
-      <Filter>Tests</Filter>
-    </ClCompile>
-    <ClCompile Include="source\Tests\Test.NodeNetwork.cpp">
-      <Filter>Tests</Filter>
-    </ClCompile>
     <ClCompile Include="source\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Test.GameLogic.cpp">
-      <Filter>Tests</Filter>
-    </ClCompile>
     <ClCompile Include="..\nnTicTacToe\source\Game\GameLogic.cpp">
       <Filter>Resource Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Test.ParameterManager.cpp">
-      <Filter>Tests</Filter>
     </ClCompile>
     <ClCompile Include="..\nnTicTacToe\source\NeuralNetwork\ParameterManager.cpp">
       <Filter>Resource Files\NodeNetwork</Filter>
@@ -63,17 +54,35 @@
     <ClCompile Include="..\nnTicTacToe\source\Game\Player.cpp">
       <Filter>Resource Files\Game</Filter>
     </ClCompile>
-    <ClCompile Include="Test.Player.cpp">
-      <Filter>Tests</Filter>
-    </ClCompile>
-    <ClCompile Include="Test.TicTacToeTrainer.cpp">
-      <Filter>Tests</Filter>
-    </ClCompile>
     <ClCompile Include="..\nnTicTacToe\source\Training\BaseTrainer.cpp">
       <Filter>Resource Files\Training</Filter>
     </ClCompile>
     <ClCompile Include="..\nnTicTacToe\source\Training\TicTacToeTrainer.cpp">
       <Filter>Resource Files\Training</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Tests\Test.GameLogic.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Tests\Test.Node.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Tests\Test.NodeNetwork.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Tests\Test.ParameterManager.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Tests\Test.Player.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Tests\Test.TicTacToeTrainer.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nnTicTacToe\source\Math\ActivationFunctions.cpp">
+      <Filter>Resource Files\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Tests\Test.ActivationFunctions.cpp">
+      <Filter>Tests</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -106,6 +115,9 @@
     </ClInclude>
     <ClInclude Include="..\nnTicTacToe\source\Training\TicTacToeTrainer.h">
       <Filter>Resource Files\Training</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nnTicTacToe\source\Math\ActivationFunctions.h">
+      <Filter>Resource Files\Math</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
