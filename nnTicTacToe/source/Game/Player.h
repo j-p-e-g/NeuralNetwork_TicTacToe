@@ -15,8 +15,10 @@ namespace Game
 
     public:
         int getId() const { return m_id; }
+        CellState getPlayerId() const { return m_player; }
         virtual std::string getPlayerType() const = 0;
-        virtual int decideMove(const std::vector<CellState>& gameCells) = 0;
+        virtual int decideMove(const std::vector<CellState>& gameCells);
+        virtual int decideMove(const std::vector<CellState>& gameCells, std::vector<double>& outputValues) = 0;
 
     protected:
         CellState m_player;
@@ -36,6 +38,7 @@ namespace Game
 
         /// pick a random non-occupied cell
         int decideMove(const std::vector<CellState>& gameCells) override;
+        int decideMove(const std::vector<CellState>& gameCells, std::vector<double>& outputValues) override;
 
     private:
         std::mt19937 m_mt;
@@ -52,10 +55,7 @@ namespace Game
 
         /// pick a random non-occupied cell
         int decideMove(const std::vector<CellState>& gameCells) override;
-
-    public:
-        void getTripleCandidates(const std::vector<CellState>& gameCells, CellState targeState, std::vector<int>& candidates) const;
-        int getTripleCandidate(const std::vector<CellState>& gameCells, CellState targeState, int idx1, int idx2, int idx3) const;
+        int decideMove(const std::vector<CellState>& gameCells, std::vector<double>& outputValues) override;
 
     private:
         std::mt19937 m_mt;
@@ -71,6 +71,7 @@ namespace Game
     public:
         std::string getPlayerType() const override { return "AiPlayer"; }
         int decideMove(const std::vector<CellState>& gameCells) override;
+        int decideMove(const std::vector<CellState>& gameCells, std::vector<double>& outputValues) override;
         void getNodeNetworkInputValues(const std::vector<CellState>& gameCells, std::vector<double>& inputValues) const;
 
     private:

@@ -139,6 +139,110 @@ namespace Game
         }
     }
 
+    void TicTacToeLogic::getExpectedOutput(int playerId, std::vector<double>& expectedOutput) const
+    {
+        const double OCCUPIED_CELL_VALUE = 0;
+        const double WIN_VALUE = 1;
+        const double LOSS_PREVENTION_VALUE = 1;
+        const double EMPTY_CELL_VALUE_WITH_TRIPLES = 0.5;
+        const double EMPTY_CELL_VALUE_NO_TRIPLES = 1;
+
+        std::vector<int> winTripleCandidates;
+        std::vector<int> lossTripleCandidates;
+
+        getTripleCandidates(m_gameCells, playerId == 0 ? CellState::CS_PLAYER1 : CellState::CS_PLAYER2, winTripleCandidates);
+        getTripleCandidates(m_gameCells, playerId == 0 ? CellState::CS_PLAYER2 : CellState::CS_PLAYER1, lossTripleCandidates);
+
+        expectedOutput.clear();
+        for (int k = 0; k < getBoardSize(); k++)
+        {
+            if (m_gameCells[k] != CellState::CS_EMPTY)
+            {
+                expectedOutput.push_back(OCCUPIED_CELL_VALUE);
+                continue;
+            }
+
+            if (std::find(winTripleCandidates.begin(), winTripleCandidates.end(), k) != winTripleCandidates.end())
+            {
+                expectedOutput.push_back(WIN_VALUE);
+            }
+            else if (std::find(lossTripleCandidates.begin(), lossTripleCandidates.end(), k) != lossTripleCandidates.end())
+            {
+                expectedOutput.push_back(LOSS_PREVENTION_VALUE);
+            }
+            else if (winTripleCandidates.empty() && lossTripleCandidates.empty())
+            {
+                expectedOutput.push_back(EMPTY_CELL_VALUE_NO_TRIPLES);
+            }
+            else
+            {
+                expectedOutput.push_back(EMPTY_CELL_VALUE_WITH_TRIPLES);
+            }
+        }
+    }
+
+    void TicTacToeLogic::getTripleCandidates(const std::vector<CellState>& gameCells, CellState targeState, std::vector<int>& candidates)
+    {
+        // check if we can complete a triple
+        for (int k = 0; k < 3; k++)
+        {
+            // compare rows
+            int candidate = getTripleCandidate(gameCells, targeState, 3 * k, 3 * k + 1, 3 * k + 2);
+            if (candidate != -1)
+            {
+                candidates.push_back(candidate);
+            }
+
+            // compare columns
+            candidate = getTripleCandidate(gameCells, targeState, k, 3 + k, 6 + k);
+            if (candidate != -1)
+            {
+                candidates.push_back(candidate);
+            }
+        }
+
+        // compare diagonals
+        int candidate = getTripleCandidate(gameCells, targeState, 0, 4, 8);
+        if (candidate != -1)
+        {
+            candidates.push_back(candidate);
+        }
+
+        candidate = getTripleCandidate(gameCells, targeState, 2, 4, 6);
+        if (candidate != -1)
+        {
+            candidates.push_back(candidate);
+        }
+    }
+
+    int TicTacToeLogic::getTripleCandidate(const std::vector<CellState>& gameCells, CellState targetState, int idx1, int idx2, int idx3)
+    {
+        assert(idx1 >= 0 && idx1 < gameCells.size());
+        assert(idx2 >= 0 && idx2 < gameCells.size());
+        assert(idx3 >= 0 && idx3 < gameCells.size());
+
+        const CellState cs1 = gameCells[idx1];
+        const CellState cs2 = gameCells[idx2];
+        const CellState cs3 = gameCells[idx3];
+
+        if (cs1 == CS_EMPTY && cs2 == targetState && cs2 == cs3)
+        {
+            return idx1;
+        }
+
+        if (cs2 == CS_EMPTY && cs1 == targetState && cs1 == cs3)
+        {
+            return idx2;
+        }
+
+        if (cs3 == CS_EMPTY && cs1 == targetState && cs1 == cs2)
+        {
+            return idx3;
+        }
+
+        return -1;
+    }
+
     GameState TicTacToeLogic::evaluateBoard() const
     {
         for (int k = 0; k < 3; k++)

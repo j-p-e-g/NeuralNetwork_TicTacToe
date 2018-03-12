@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "FileIO/FileManager.h"
+#include "GameLogic.h"
 #include "Player.h"
 
 namespace Game
@@ -17,6 +18,14 @@ namespace Game
     {
     }
 
+    int BasePlayer::decideMove(const std::vector<CellState>& gameCells)
+    {
+        std::vector<double> outputCells;
+        return decideMove(gameCells, outputCells);
+    }
+
+    // RandomPlayer:
+    // randomly picks an empty cell
     RandomPlayer::RandomPlayer(int id, CellState player)
         : BasePlayer(id, player)
     {
@@ -25,6 +34,11 @@ namespace Game
     }
 
     int RandomPlayer::decideMove(const std::vector<CellState>& gameCells)
+    {
+        return BasePlayer::decideMove(gameCells);
+    }
+
+    int RandomPlayer::decideMove(const std::vector<CellState>& gameCells, std::vector<double>& outputValues)
     {
         assert(!gameCells.empty());
 
@@ -48,6 +62,8 @@ namespace Game
         return candidates[randomIndex];
     }
 
+    // SemiRandomPlayer:
+    // tries to close any open triples, otherwise randomly picks an empty cell
     SemiRandomPlayer::SemiRandomPlayer(int id, CellState player)
         : RandomPlayer(id, player)
     {
@@ -55,17 +71,22 @@ namespace Game
 
     int SemiRandomPlayer::decideMove(const std::vector<CellState>& gameCells)
     {
+        return RandomPlayer::decideMove(gameCells);
+    }
+
+    int SemiRandomPlayer::decideMove(const std::vector<CellState>& gameCells, std::vector<double>& outputValues)
+    {
         assert(!gameCells.empty());
 
         std::vector<int> candidates;
 
         // first try to find a winning triple
-        getTripleCandidates(gameCells, m_player, candidates);
+        TicTacToeLogic::getTripleCandidates(gameCells, m_player, candidates);
 
         if (candidates.empty())
         {
             // flip player to try preventing a losing triple
-            getTripleCandidates(gameCells, m_player == CS_PLAYER1 ? CS_PLAYER2 : CS_PLAYER1, candidates);
+            TicTacToeLogic::getTripleCandidates(gameCells, m_player == CS_PLAYER1 ? CS_PLAYER2 : CS_PLAYER1, candidates);
 
             if (candidates.empty())
             {
@@ -79,68 +100,8 @@ namespace Game
         return candidates[randomIndex];
     }
 
-    void SemiRandomPlayer::getTripleCandidates(const std::vector<CellState>& gameCells, CellState targeState, std::vector<int>& candidates) const
-    {
-        // check if we can complete a triple
-        for (int k = 0; k < 3; k++)
-        {
-            // compare rows
-            int candidate = getTripleCandidate(gameCells, targeState, 3 * k, 3 * k + 1, 3 * k + 2);
-            if (candidate != -1)
-            {
-                candidates.push_back(candidate);
-            }
-
-            // compare columns
-            candidate = getTripleCandidate(gameCells, targeState, k, 3 + k, 6 + k);
-            if (candidate != -1)
-            {
-                candidates.push_back(candidate);
-            }
-        }
-
-        // compare diagonals
-        int candidate = getTripleCandidate(gameCells, targeState, 0, 4, 8);
-        if (candidate != -1)
-        {
-            candidates.push_back(candidate);
-        }
-
-        candidate = getTripleCandidate(gameCells, targeState, 2, 4, 6);
-        if (candidate != -1)
-        {
-            candidates.push_back(candidate);
-        }
-    }
-
-    int SemiRandomPlayer::getTripleCandidate(const std::vector<CellState>& gameCells, CellState targetState, int idx1, int idx2, int idx3) const
-    {
-        assert(idx1 >= 0 && idx1 < gameCells.size());
-        assert(idx2 >= 0 && idx2 < gameCells.size());
-        assert(idx3 >= 0 && idx3 < gameCells.size());
-
-        const CellState cs1 = gameCells[idx1];
-        const CellState cs2 = gameCells[idx2];
-        const CellState cs3 = gameCells[idx3];
-
-        if (cs1 == CS_EMPTY && cs2 == targetState && cs2 == cs3)
-        {
-            return idx1;
-        }
-
-        if (cs2 == CS_EMPTY && cs1 == targetState && cs1 == cs3)
-        {
-            return idx2;
-        }
-
-        if (cs3 == CS_EMPTY && cs1 == targetState && cs1 == cs2)
-        {
-            return idx3;
-        }
-
-        return -1;
-    }
-
+    // AI player:
+    // uses neural networks to find a solution
     AiPlayer::AiPlayer(int id, CellState player, std::shared_ptr<NodeNetwork>& network)
         : BasePlayer(id, player)
         , m_nodeNetwork(network)
@@ -149,14 +110,18 @@ namespace Game
 
     int AiPlayer::decideMove(const std::vector<CellState>& gameCells)
     {
+        return BasePlayer::decideMove(gameCells);
+    }
+
+    int AiPlayer::decideMove(const std::vector<CellState>& gameCells, std::vector<double>& outputValues)
+    {
         std::vector<double> inputValues;
         getNodeNetworkInputValues(gameCells, inputValues);
 
         m_nodeNetwork->assignInputValues(inputValues);
         m_nodeNetwork->computeValues();
 
-        std::vector<double> outputValues;
-        int bestResult = m_nodeNetwork->getOutputValues(outputValues);
+        const int bestResult = m_nodeNetwork->getOutputValues(outputValues);
 
         //std::ostringstream buffer;
         //buffer << "Output: ";
