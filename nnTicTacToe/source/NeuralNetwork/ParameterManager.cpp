@@ -33,6 +33,7 @@ namespace NeuralNetwork
         std::ostringstream buffer;
         buffer << "ParameterManager: ";
         buffer << std::endl << "  #parameters: " << m_paramData.numParams;
+        buffer << std::endl << "  #concurrent parameter sets: " << m_paramData.numParamSets;
         buffer << std::endl << "  random param values picked within [" << m_paramData.minRandomParamValue << ", " << m_paramData.maxRandomParamValue << "]";
         buffer << std::endl << "  mutation replacement chance during evolution: " << m_paramData.mutationReplacementChance;
         buffer << std::endl << "  mutation bonus chance during evolution: " << m_paramData.mutationBonusChance;
@@ -147,6 +148,14 @@ namespace NeuralNetwork
         found->second.score = score;
     }
 
+    void ParameterManager::setError(int id, double errorValue)
+    {
+        auto& found = m_paramSets.find(id);
+        assert(found != m_paramSets.end());
+
+        found->second.error = errorValue;
+    }
+
     void ParameterManager::setParameterSetActive(int id, bool active)
     {
         auto& found = m_paramSets.find(id);
@@ -221,7 +230,7 @@ namespace NeuralNetwork
         }
     }
 
-    bool ParameterManager::evolveParameterSets(int totalNumberOfSets, std::vector<int>& newParameterSetIds)
+    bool ParameterManager::evolveParameterSets(std::vector<int>& newParameterSetIds)
     {
         std::ostringstream buffer;
         buffer << std::endl << "Evolving parameter sets...";
@@ -243,7 +252,7 @@ namespace NeuralNetwork
         fillParameterSetProbabilityMap(probabilityMap);
         assert(probabilityMap.size() > 1);
 
-        assert(m_paramData.numBestSetsKeptDuringEvolution + m_paramData.numBestSetsKeptDuringEvolution + m_paramData.numAddedRandomSetsDuringEvolution < totalNumberOfSets);
+        assert(m_paramData.numBestSetsKeptDuringEvolution + m_paramData.numBestSetsKeptDuringEvolution + m_paramData.numAddedRandomSetsDuringEvolution < m_paramData.numParamSets);
 
         // keep best parameter sets
         for (int k = 0; k < m_paramData.numBestSetsKeptDuringEvolution; k++)
@@ -295,7 +304,7 @@ namespace NeuralNetwork
         PRINT_LOG(buffer);
 
         // fill the remaining slots by combining previous sets
-        while (newParameterSetIds.size() < totalNumberOfSets)
+        while (newParameterSetIds.size() < m_paramData.numParamSets)
         {
             const int id1 = getIdByProbability(probabilityMap);
             const int id2 = getIdByProbability(probabilityMap);

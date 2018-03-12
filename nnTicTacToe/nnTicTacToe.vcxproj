@@ -30,6 +30,7 @@
     <ClCompile Include="source\stdafx.cpp" />
     <ClCompile Include="source\Training\BaseTrainer.cpp" />
     <ClCompile Include="source\Training\TicTacToeTrainer.cpp" />
+    <ClCompile Include="source\Training\TrainingMethodHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\FileIO\FileManager.h" />
@@ -44,6 +45,7 @@
     <ClInclude Include="source\targetver.h" />
     <ClInclude Include="source\Training\BaseTrainer.h" />
     <ClInclude Include="source\Training\TicTacToeTrainer.h" />
+    <ClInclude Include="source\Training\TrainingMethodHandler.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{E7E6393C-78AD-4868-9DCF-2E9B704D40BE}</ProjectGuid>

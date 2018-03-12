@@ -84,6 +84,9 @@
     <ClCompile Include="source\Tests\Test.ActivationFunctions.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\nnTicTacToe\source\Training\TrainingMethodHandler.cpp">
+      <Filter>Resource Files\Training</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\nnTicTacToe\source\NeuralNetwork\Node.h">
@@ -118,6 +121,9 @@
     </ClInclude>
     <ClInclude Include="..\nnTicTacToe\source\Math\ActivationFunctions.h">
       <Filter>Resource Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nnTicTacToe\source\Training\TrainingMethodHandler.h">
+      <Filter>Resource Files\Training</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

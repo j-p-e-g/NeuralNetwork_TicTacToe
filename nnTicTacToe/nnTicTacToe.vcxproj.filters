@@ -61,6 +61,9 @@
     <ClCompile Include="source\Math\ActivationFunctions.cpp">
       <Filter>Math</Filter>
     </ClCompile>
+    <ClCompile Include="source\Training\TrainingMethodHandler.cpp">
+      <Filter>Training</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\stdafx.h">
@@ -98,6 +101,9 @@
     </ClInclude>
     <ClInclude Include="source\Math\ActivationFunctions.h">
       <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Training\TrainingMethodHandler.h">
+      <Filter>Training</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

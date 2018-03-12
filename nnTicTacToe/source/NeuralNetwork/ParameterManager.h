@@ -10,6 +10,7 @@ namespace NeuralNetwork
     struct ParamSet
     {
         double score = 0.0;
+        double error = -1;
         bool active = true;
         std::vector<double> params;
     };
@@ -27,6 +28,7 @@ namespace NeuralNetwork
         void fillWithRandomValues(std::vector<double>& params) const;
         int addNewParamSet(const ParamSet& pset);
         void setScore(int id, double score);
+        void setError(int id, double errorValue);
         void setParameterSetActive(int id, bool active);
         void setParameters(int id, const std::vector<double>& pset);
         bool getParamSetForId(int id, ParamSet& pset) const;
@@ -34,7 +36,7 @@ namespace NeuralNetwork
         void getParameterSetIdsSortedByScore(std::vector<int>& bestIds) const;
         void removeParameterSetForId(int id);
 
-        bool evolveParameterSets(int totalNumberOfSets, std::vector<int>& newParameterSetIds);
+        bool evolveParameterSets(std::vector<int>& newParameterSetIds);
         void updateEffectiveMutationRates(int newBestSetId);
         double getEffectiveReplacementMutationChance() const { return m_effectiveMutationReplacementChance; }
         double getEffectiveBonusMutationChance() const { return m_effectiveMutationBonusChance; }

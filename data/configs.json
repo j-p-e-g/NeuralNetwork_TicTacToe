@@ -1,11 +1,12 @@
 {
-    "num_param_sets": 30,
-    "num_iterations": 500,
+    "num_param_sets": 1,
+    "num_iterations": 250,
     "num_matches": 100,
     "num_hidden_nodes": [
         9
     ],
     "activation_function": "leakyrelu",
+    "use_backpropagation": true,
     "min_random_parameter": -10,
     "max_random_parameter": 10,
     "num_best_sets_kept_during_evolution": 2,

@@ -169,6 +169,7 @@
     <ClCompile Include="..\nnTicTacToe\source\NeuralNetwork\ParameterManager.cpp" />
     <ClCompile Include="..\nnTicTacToe\source\Training\BaseTrainer.cpp" />
     <ClCompile Include="..\nnTicTacToe\source\Training\TicTacToeTrainer.cpp" />
+    <ClCompile Include="..\nnTicTacToe\source\Training\TrainingMethodHandler.cpp" />
     <ClCompile Include="source\stdafx.cpp" />
     <ClCompile Include="source\Tests\Test.ActivationFunctions.cpp" />
     <ClCompile Include="source\Tests\Test.GameLogic.cpp" />
@@ -188,6 +189,7 @@
     <ClInclude Include="..\nnTicTacToe\source\NeuralNetwork\ParameterManager.h" />
     <ClInclude Include="..\nnTicTacToe\source\Training\BaseTrainer.h" />
     <ClInclude Include="..\nnTicTacToe\source\Training\TicTacToeTrainer.h" />
+    <ClInclude Include="..\nnTicTacToe\source\Training\TrainingMethodHandler.h" />
     <ClInclude Include="source\stdafx.h" />
     <ClInclude Include="source\targetver.h" />
   </ItemGroup>

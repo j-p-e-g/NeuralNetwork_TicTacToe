@@ -527,6 +527,7 @@ namespace ParameterManagerTest
         TEST_METHOD(ParameterManager_evolveParameterSets)
         {
             ParameterManagerData data;
+            data.numParamSets = 4;
             data.numParams = 2;
             data.minRandomParamValue = 0;
             data.maxRandomParamValue = 5;
@@ -555,7 +556,7 @@ namespace ParameterManagerTest
             pm.addNewParamSet(ps4);
 
             std::vector<int> newParameterSetIds;
-            Assert::AreEqual(true, pm.evolveParameterSets(4, newParameterSetIds));
+            Assert::AreEqual(true, pm.evolveParameterSets(newParameterSetIds));
 
             // definitely contains the most highly scoring set (id 1)
             Assert::AreEqual(true, std::find(newParameterSetIds.begin(), newParameterSetIds.end(), 1) != newParameterSetIds.end());

@@ -49,6 +49,13 @@ namespace Training
             return false;
         }
 
+        if (!setupTrainingMethod())
+        {
+            return false;
+        }
+
+        m_trainingMethodHandler->describeTrainingMethod();
+
         m_initialized = true;
         return true;
     }
@@ -83,6 +90,8 @@ namespace Training
             return false;
         }
 
+        m_paramData.numParamSets = j.at("num_param_sets").get<int>();
+
         m_paramData.minRandomParamValue = j.at("min_random_parameter").get<double>();
         m_paramData.maxRandomParamValue = j.at("max_random_parameter").get<double>();
 
@@ -97,7 +106,6 @@ namespace Training
         m_paramData.numBestSetsMutatedDuringEvolution = j.at("num_best_sets_mutated_during_evolution").get<int>();
         m_paramData.numAddedRandomSetsDuringEvolution = j.at("num_random_sets_added_during_evolution").get<int>();
 
-        m_numParamSets = j.at("num_param_sets").get<int>();
         m_numIterations = j.at("num_iterations").get<int>();
         m_numMatches = j.at("num_matches").get<int>();
 
@@ -108,6 +116,8 @@ namespace Training
         {
             m_numHiddenNodes.push_back(*it);
         }
+
+        m_useBackpropagation = j.at("use_backpropagation").get<bool>();
 
         return true;
     }
@@ -123,16 +133,16 @@ namespace Training
             return false;
         }
 
-        if (m_numIterations > 1)
+        if (!m_useBackpropagation && m_numIterations > 1)
         {
             const int numSpecialEvolutionSets = m_paramData.numBestSetsKeptDuringEvolution + m_paramData.numBestSetsMutatedDuringEvolution + m_paramData.numAddedRandomSetsDuringEvolution;
 
-            if (m_numParamSets <= numSpecialEvolutionSets)
+            if (m_paramData.numParamSets <= numSpecialEvolutionSets)
             {
                 std::ostringstream buffer;
                 buffer << "Option mismatch: the number of sets added during the evolution step (kept, mutated and randomly added; currently "
                     << numSpecialEvolutionSets << ") may not be equal to or larger than the total number of sets ("
-                    << m_numParamSets << "); otherwise iterating is pointless)";
+                    << m_paramData.numParamSets << "); otherwise iterating is pointless)";
                 PRINT_ERROR(buffer);
                 return false;
             }
@@ -155,17 +165,22 @@ namespace Training
     {
         std::ostringstream buffer;
         buffer << getName() << ": ";
-        buffer << std::endl << "  #paramSets: " << m_numParamSets;
         buffer << std::endl << "  #matches: " << m_numMatches;
         buffer << std::endl << "  #iterations: " << m_numIterations;
         buffer << std::endl;
         PRINT_LOG(buffer);
     }
 
+    bool BaseTrainer::setupTrainingMethod()
+    {
+        // nothing to do
+        return false;
+    }
+
     bool BaseTrainer::setupTrainingData()
     {
         // nothing to do
-        return true;
+        return false;
     }
 
     bool BaseTrainer::setupNetwork()
@@ -197,7 +212,7 @@ namespace Training
         m_paramManager->describeParameterManager();
 
         // create N different parameter sets
-        for (int k = 0; k < m_numParamSets; k++)
+        for (int k = 0; k < m_paramData.numParamSets; k++)
         {
             ParamSet pset;
             m_paramManager->fillWithRandomValues(pset.params);
@@ -221,7 +236,11 @@ namespace Training
 
         for (int i = 0; i < m_numIterations; i++)
         {
-            handleTrainingIteration(i);
+            // possibly break out early when we're done sooner
+            if (handleTrainingIteration(i))
+            {
+                break;
+            }
         }
 
         const auto processEnd = std::chrono::high_resolution_clock::now();
@@ -235,7 +254,7 @@ namespace Training
         m_paramManager->dumpDataToFile();
     }
 
-    void BaseTrainer::handleTrainingIteration(int iteration)
+    bool BaseTrainer::handleTrainingIteration(int iteration)
     {
         std::ostringstream buffer;
         buffer << "Training iteration " << iteration;
@@ -245,13 +264,15 @@ namespace Training
         std::vector<int> currentIds;
         m_paramManager->getActiveParameterSetIds(currentIds);
 
+        const bool isLastIteration = (iteration == m_numIterations - 1);
+
         for (auto id : currentIds)
         {
             // reset network parameters
             buffer.clear();
             buffer.str("");
             buffer << "-----------------------------------------------"
-                << std::endl << "Trying parameter set " << id << ": ";
+                   << std::endl << "Trying parameter set " << id << ": ";
             PRINT_LOG(buffer);
 
             ParamSet pset;
@@ -266,12 +287,12 @@ namespace Training
             }
 
             m_nodeNetwork->assignParameters(pset.params);
-            handleNetworkComputation(id);
-            describeScoreForId(id);
+            handleNetworkComputation(id, isLastIteration);
 
             // update score
             const double newScore = computeFinalScore(id);
             m_paramManager->setScore(id, newScore);
+            describeScoreForId(id);
         }
 
         std::vector<int> bestSetIds;
@@ -288,14 +309,11 @@ namespace Training
         buffer << std::endl << "Best parameter set: " << bestSetIds[0] << ", with score: " << pset.score;
         PRINT_LOG(buffer);
 
-        const bool requiresFurtherEvolution = (iteration < m_numIterations - 1);
-        if (requiresFurtherEvolution)
-        {
-            handleParamSetEvolution();
-        }
+        m_trainingMethodHandler->postIteration(isLastIteration);
+        return isLastIteration;
     }
 
-    void BaseTrainer::handleNetworkComputation(int id)
+    void BaseTrainer::handleNetworkComputation(int id, bool isLastIteration)
     {
         // nothing to do
     }
@@ -312,32 +330,5 @@ namespace Training
 
     void BaseTrainer::handleParamSetEvolution()
     {
-        std::ostringstream buffer;
-
-        std::vector<int> newParameterSetIds;
-        if (!m_paramManager->evolveParameterSets(m_numParamSets, newParameterSetIds))
-        {
-            buffer.clear();
-            buffer.str("");
-            buffer << "Parameter evolution failed!";
-            PRINT_ERROR(buffer);
-            return;
-        }
-
-        std::vector<int> currentParameterSetIds;
-        m_paramManager->getActiveParameterSetIds(currentParameterSetIds);
-
-        for (auto id : currentParameterSetIds)
-        {
-            if (std::find(newParameterSetIds.begin(), newParameterSetIds.end(), id) == newParameterSetIds.end())
-            {
-                buffer.clear();
-                buffer.str("");
-                buffer << "Disabling parameter set " << id;
-                PRINT_LOG(buffer);
-
-                m_paramManager->setParameterSetActive(id, false);
-            }
-        }
     }
 }

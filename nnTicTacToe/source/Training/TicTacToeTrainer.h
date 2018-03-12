@@ -25,14 +25,15 @@ namespace Training
         : public BaseTrainer
     {
     public:
-        TicTacToeTrainer() = default;
+        TicTacToeTrainer(std::shared_ptr<Game::GameLogic>& gameLogic);
         ~TicTacToeTrainer();
 
     public:
         bool setupTrainingData() override;
+        bool setupTrainingMethod() override;
         NetworkSizeData getNetworkSizeData() const override;
         void run() override;
-        void handleNetworkComputation(int id) override;
+        void handleNetworkComputation(int id, bool isLastIteration) override;
 
     protected:
         std::string getName() const override { return "TicTacToeTrainer"; }
@@ -53,7 +54,7 @@ namespace Training
         void dumpBestSetImprovementStats() const;
 
     private:
-        std::shared_ptr<Game::TicTacToeLogic> m_gameLogic;
+        std::shared_ptr<Game::GameLogic> m_gameLogic;
         std::map<int, ScoreSet> m_scoreMap;
         std::vector<std::vector<CellState>> m_gameStateCollection;
     };

@@ -27,6 +27,7 @@ struct NetworkSizeData
 
 struct ParameterManagerData
 {
+    int numParamSets = 10; /// number of concurrently tried parameter sets
     int numParams = 1; /// total number of parameters per set
     double minRandomParamValue = -1; /// lower limit for randomly picked values
     double maxRandomParamValue = 1; /// upper limit for randomly picked values

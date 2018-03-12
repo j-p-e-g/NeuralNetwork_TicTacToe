@@ -8,13 +8,17 @@
 #include "FileIO/FileManager.h"
 #include "Game/GameLogic.h"
 
-#define JUST_TEST_VALIDITY 1
-
 namespace Training
 {
     using namespace FileIO;
     using namespace Game;
     using namespace NeuralNetwork;
+    
+    TicTacToeTrainer::TicTacToeTrainer(std::shared_ptr<GameLogic>& gameLogic)
+        : BaseTrainer()
+        , m_gameLogic(gameLogic)
+    {
+    }
 
     TicTacToeTrainer::~TicTacToeTrainer()
     {
@@ -22,11 +26,20 @@ namespace Training
 
     bool TicTacToeTrainer::setupTrainingData()
     {
-        m_gameLogic = std::make_shared<TicTacToeLogic>();
-
-#ifdef JUST_TEST_VALIDITY
         TicTacToeLogic::collectInconclusiveFinalGameBoardStates(m_gameStateCollection);
-#endif
+        return true;
+    }
+
+    bool TicTacToeTrainer::setupTrainingMethod()
+    {
+        if (m_useBackpropagation)
+        {
+            m_trainingMethodHandler = std::make_shared<BackpropagationHandler>(m_nodeNetwork, m_paramManager, m_gameLogic);
+        }
+        else
+        {
+            m_trainingMethodHandler = std::make_shared<ParameterEvolutionHandler>(m_nodeNetwork, m_paramManager, m_gameLogic);
+        }
         return true;
     }
 
@@ -47,52 +60,34 @@ namespace Training
         dumpBestSetImprovementStats();
     }
 
-    void TicTacToeTrainer::handleNetworkComputation(int id)
+    void TicTacToeTrainer::handleNetworkComputation(int id, bool isLastIteration)
     {
-#ifdef JUST_TEST_VALIDITY
+        m_trainingMethodHandler->iterationStart(id);
+
+        // for each possible permutation on inconclusive last-turn states,
+        // try whether the ai makes a valid move
+        for (const auto& gameCells : m_gameStateCollection)
         {
-            // for each possible permutation on inconclusive last-turn states,
-            // try whether the ai makes a valid move
-            for (const auto& gameCells : m_gameStateCollection)
+            m_gameLogic->setGameCells(gameCells);
+
+            std::shared_ptr<BasePlayer> aiPlayer = std::make_shared<AiPlayer>(id, CellState::CS_PLAYER1, m_nodeNetwork);
+            std::vector<double> outputValues;
+
+            const int nextMove = aiPlayer->decideMove(gameCells, outputValues);
+
+            GameState finalState = GameState::GS_GAMEOVER_TIMEOUT;
+            if (!m_gameLogic->isValidMove(0, nextMove))
             {
-                m_gameLogic->setGameCells(gameCells);
-
-                AiPlayer aiPlayer(id, CellState::CS_PLAYER1, m_nodeNetwork);
-                const int nextMove = aiPlayer.decideMove(gameCells);
-
-                GameState finalState = GameState::GS_GAMEOVER_TIMEOUT;
-                if (!m_gameLogic->isValidMove(0, nextMove))
-                {
-                    finalState = GameState::GS_INVALID;
-                }
-
-                const double score = computeMatchScore(aiPlayer, 4, finalState);
-                addScore(aiPlayer, score, finalState);
+                finalState = GameState::GS_INVALID;
             }
-        }
-#else
-        {
-            // play N matches with the AI as the first player
-            AiPlayer aiPlayer(id, CellState::CS_PLAYER1, m_nodeNetwork);
-            SemiRandomPlayer randomPlayer(-1, CellState::CS_PLAYER2);
 
-            for (int k = 0; k < m_numMatches; k++)
-            {
-                playMatch(aiPlayer, randomPlayer);
-            }
+            const double score = computeMatchScore(*aiPlayer, 4, finalState);
+            m_trainingMethodHandler->handleTrainingIteration(aiPlayer);
+            addScore(*aiPlayer, score, finalState);
+
         }
 
-        {
-            // play N matches with the AI as the second player
-            SemiRandomPlayer randomPlayer(-1, CellState::CS_PLAYER1);
-            AiPlayer aiPlayer(id, CellState::CS_PLAYER2, m_nodeNetwork);
-
-            for (int k = 0; k < m_numMatches; k++)
-            {
-                playMatch(randomPlayer, aiPlayer);
-            }
-        }
-#endif
+        m_trainingMethodHandler->iterationEnd(isLastIteration);
     }
 
     void TicTacToeTrainer::playMatch(BasePlayer& playerA, BasePlayer& playerB)
@@ -186,7 +181,9 @@ namespace Training
     {
         std::vector<CellState> gameCells;
         m_gameLogic->getGameCells(gameCells);
-        const int nextMove = player.decideMove(gameCells);
+
+        std::vector<double> outputValues;
+        const int nextMove = player.decideMove(gameCells, outputValues);
 
         //std::ostringstream buffer;
         //buffer << "next move: " << nextMove;
@@ -307,6 +304,16 @@ namespace Training
 
         buffer << std::endl << "outcome score: " << getOutcomeRatioScoreForId(id);
         buffer << std::endl << "avg. score: " << getAverageScoreForId(id);
+
+        ParamSet pset;
+        m_paramManager->getParamSetForId(id, pset);
+        buffer << std::endl << "final score: " << pset.score;
+
+        if (pset.error >= 0)
+        {
+            buffer << std::endl << "avg. error: " << pset.error;
+        }
+
         PRINT_LOG(buffer);
     }
 
@@ -394,7 +401,7 @@ namespace Training
             return;
         }
 
-        ofs << "Iteration, Score" << std::endl;
+        ofs << "Iteration, Score, Error" << std::endl;
 
         for (const auto& iter : m_idsPerIteration)
         {
@@ -403,7 +410,10 @@ namespace Training
                 ScoreSet score;
                 if (getScoreSetForId(id, score))
                 {
-                    ofs << (iter.first+1) << ", " << score.finalScore << std::endl;
+                    ParamSet pset;
+                    m_paramManager->getParamSetForId(id, pset);
+
+                    ofs << (iter.first+1) << ", " << score.finalScore << ", " << pset.error << std::endl;
                 }
             }
         }
@@ -426,14 +436,13 @@ namespace Training
         std::ofstream ofs;
         if (!FileManager::openOutFileStream(relativePath, ofs))
         {
-
             std::ostringstream buffer;
             buffer << "Failed to open file '" << relativePath.c_str() << "' for writing";
             PRINT_ERROR(buffer);
             return;
         }
 
-        ofs << "Iteration, Id, Score, OutcomeScore, AvgScore, CountInvalid, CountLost, CountTied, CountWon" << std::endl;
+        ofs << "Iteration, Id, Error, Score, OutcomeScore, AvgScore, CountInvalid, CountLost, CountTied, CountWon" << std::endl;
 
         for (const auto& iter : m_idsPerIteration)
         {
@@ -446,7 +455,12 @@ namespace Training
             const int bestId = iter.second[0];
             if (getScoreSetForId(bestId, score))
             {
-                ofs << (iter.first+1) << ", " << bestId << ", " << score.finalScore << ", " << getOutcomeRatioScoreForId(bestId) << ", " << getAverageScoreForId(bestId)
+                ParamSet pset;
+                m_paramManager->getParamSetForId(bestId, pset);
+
+                ofs << (iter.first+1) << ", " << bestId 
+                    << ", " << pset.error << ", " << score.finalScore 
+                    << ", " << getOutcomeRatioScoreForId(bestId) << ", " << getAverageScoreForId(bestId)
                     << ", " << score.invalidCount << ", " << score.lostCount << ", " << score.tiedCount << ", " << score.wonCount << std::endl;
             }
         }
