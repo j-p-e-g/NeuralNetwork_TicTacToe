@@ -159,6 +159,98 @@ namespace GameLogicTest
             Assert::AreEqual(true, expectedOutput[7] > expectedOutput[2]);
         }
 
+        // we expect zero or a negative value for occupied cells
+        TEST_METHOD(TicTacToeLogic_capValueAccordingToState_occupiedCell_player1)
+        {
+            double value1 = 0;
+            double value2 = 1;
+            double value3 = -92.258;
+            double value4 = 2.694;
+
+            TicTacToeLogic::capValueAccordingToState(CellState::CS_PLAYER1, value1);
+            TicTacToeLogic::capValueAccordingToState(CellState::CS_PLAYER1, value2);
+            TicTacToeLogic::capValueAccordingToState(CellState::CS_PLAYER1, value3);
+            TicTacToeLogic::capValueAccordingToState(CellState::CS_PLAYER1, value4);
+
+            Assert::AreEqual(0, value1, 0.0001);
+            Assert::AreEqual(0, value2, 0.0001);
+            // not corrected
+            Assert::AreEqual(-92.258, value3, 0.0001);
+            Assert::AreEqual(0, value4, 0.0001);
+        }
+
+        // we expect zero or a negative value for occupied cells
+        TEST_METHOD(TicTacToeLogic_capValueAccordingToState_occupiedCell_player2)
+        {
+            double value1 = 0;
+            double value2 = 1;
+            double value3 = -3.69;
+            double value4 = 197.26;
+
+            TicTacToeLogic::capValueAccordingToState(CellState::CS_PLAYER2, value1);
+            TicTacToeLogic::capValueAccordingToState(CellState::CS_PLAYER2, value2);
+            TicTacToeLogic::capValueAccordingToState(CellState::CS_PLAYER2, value3);
+            TicTacToeLogic::capValueAccordingToState(CellState::CS_PLAYER2, value4);
+
+            Assert::AreEqual(0, value1, 0.0001);
+            Assert::AreEqual(0, value2, 0.0001);
+            // not corrected
+            Assert::AreEqual(-3.69, value3, 0.0001);
+            Assert::AreEqual(0, value4, 0.0001);
+        }
+
+        // we expect one or a positive value for free cells
+        TEST_METHOD(TicTacToeLogic_capValueAccordingToState_freeCell)
+        {
+            double value1 = 0;
+            double value2 = 1;
+            double value3 = -92.258;
+            double value4 = 2.694;
+
+            TicTacToeLogic::capValueAccordingToState(CellState::CS_EMPTY, value1);
+            TicTacToeLogic::capValueAccordingToState(CellState::CS_EMPTY, value2);
+            TicTacToeLogic::capValueAccordingToState(CellState::CS_EMPTY, value3);
+            TicTacToeLogic::capValueAccordingToState(CellState::CS_EMPTY, value4);
+
+            Assert::AreEqual(1, value1, 0.0001);
+            Assert::AreEqual(1, value2, 0.0001);
+            Assert::AreEqual(1, value3, 0.0001);
+            // not corrected
+            Assert::AreEqual(2.694, value4, 0.0001);
+        }
+
+        // if 0 is expected, leave negative values unchanged (gets capped) but correct positive ones
+        // if 1 is expected, leave positive values unchanged (gets capped) but correct negative ones
+        // 2 1 _
+        // _ _ 2
+        // 1 _ 1
+        TEST_METHOD(TicTacToeLogic_correctOutputValues)
+        {
+            TicTacToeLogic ticTacToe;
+            ticTacToe.applyMove(1, 0);
+            ticTacToe.applyMove(0, 1);
+            ticTacToe.applyMove(1, 5);
+            ticTacToe.applyMove(0, 6);
+            ticTacToe.applyMove(0, 8);
+
+            // assign occupied cells each with one, zero and positive as well as negative values
+            // assign free cells each with one, zero and positive as well as negative values
+            std::vector<double> outputValues = {-29.23, 0.0, 1.0, 
+                                                -8.6821, 0.0, 1.0, 
+                                                9.4255, 75.109, 31.9};
+
+            const std::vector<double> expectedOutputValues = { -29.23, 0.0, 1.0, 
+                                                               1.0, 1.0, 0.0, 
+                                                               0.0, 75.109, 0.0 };
+
+            ticTacToe.correctOutputValues(1, outputValues);
+
+            for (unsigned int k = 0; k < expectedOutputValues.size(); k++)
+            {
+                Assert::AreEqual(expectedOutputValues[k], outputValues[k], 0.0001);
+            }
+        }
+
         TEST_METHOD(TicTacToeLogic_getTripleCandidate_row)
         {
             // if a single triple can be completed, the completing cell will be returned

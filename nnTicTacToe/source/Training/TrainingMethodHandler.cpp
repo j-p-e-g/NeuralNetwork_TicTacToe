@@ -114,13 +114,18 @@ namespace Training
     {
         m_countTrainingSets++;
 
-        std::vector<double> expectedOutputValues;
-        m_gameLogic->getExpectedOutput(player->getPlayerId(), expectedOutputValues);
-        const double error = m_nodeNetwork->getTotalError(expectedOutputValues);
+        // let the game logic modify the output values to what it wants
+        std::vector<double> outputValues;
+        m_nodeNetwork->getOutputValues(outputValues, false);
+        m_gameLogic->correctOutputValues(player->getPlayerId() == CS_PLAYER1 ? 0 : 1, outputValues);
+
+        // then compute the error
+        const double error = m_nodeNetwork->getTotalError(outputValues);
         m_errors.push_back(error);
 
+        // and propagate back based on these values
         std::vector<double> tempAdjustmentValues;
-        m_nodeNetwork->handleBackpropagation(expectedOutputValues, tempAdjustmentValues);
+        m_nodeNetwork->handleBackpropagation(outputValues, tempAdjustmentValues);
         assert(tempAdjustmentValues.size() == m_parameterAdjustmentValues.size());
 
         for (unsigned int k = 0; k < tempAdjustmentValues.size(); k++)
@@ -146,38 +151,63 @@ namespace Training
 
         m_paramManager->setError(m_currentParamSetId, avgError);
 
+        std::ostringstream buffer;
+        buffer << "  avg. error: " << avgError;
+
         if (lastIteration)
         {
+            PRINT_LOG(buffer);
             return;
         }
 
         if (avgError > m_prevError)
         {
+            // if the error gets worse, try a smaller learning rate
             m_learningRate *= m_learningRateFactor;
-            if (m_minLearningRate < m_minLearningRate)
+            if (m_learningRate < m_minLearningRate)
             {
+                // but if the learning rate already is small and the error still gets worse,
+                // reset the learning rate to a larger value and hope this will get us out
+                // of a local minimum
                 m_learningRate = m_maxLearningRate;
             }
+
+            buffer << std::endl << "  new learning rate: " << m_learningRate;
         }
 
         m_prevError = avgError;
+
+        // normalize adjustment values 
+        // (large errors can result in huge adjustment values that cause the error to greatly increase)
+        double maxAdjustmentValue = 0;
+        double avgAdjustmentValue = 0;
+        for (unsigned int k = 0; k < m_parameterAdjustmentValues.size(); k++)
+        {
+            m_parameterAdjustmentValues[k] /= m_countTrainingSets;
+            maxAdjustmentValue = std::max(maxAdjustmentValue, std::abs(m_parameterAdjustmentValues[k]));
+            avgAdjustmentValue += std::abs(m_parameterAdjustmentValues[k]);
+        }
+
+        avgAdjustmentValue /= m_parameterAdjustmentValues.size();
+
+        buffer << std::endl << "  max. adjustment value: " << maxAdjustmentValue;
+        buffer << std::endl << "  avg. adjustment value: " << avgAdjustmentValue << std::endl;
+        PRINT_LOG(buffer);
+
+        if (!m_normalizeAdjustmentValues || maxAdjustmentValue < 1)
+        {
+            // reset to 1, so it has no impact
+            maxAdjustmentValue = 1;
+        }
 
         // adjust parameters by average adjustment value
         std::vector<double> previousParams;
         m_nodeNetwork->getParameters(previousParams);
 
-        // normalize adjustment values
-        double maxAdjustmentValue = 0;
-        for (unsigned int k = 0; k < m_parameterAdjustmentValues.size(); k++)
-        {
-            m_parameterAdjustmentValues[k] /= m_countTrainingSets;
-            maxAdjustmentValue = std::max(maxAdjustmentValue, std::abs(m_parameterAdjustmentValues[k]));
-        }
-
         ParamSet pset;
         for (unsigned int k = 0; k < m_parameterAdjustmentValues.size(); k++)
         {
-            double adjustmentValue = m_parameterAdjustmentValues[k] / maxAdjustmentValue;
+            const double adjustmentValue = m_parameterAdjustmentValues[k] / maxAdjustmentValue;
             pset.params.push_back(previousParams[k] - m_learningRate * adjustmentValue);
         }
 

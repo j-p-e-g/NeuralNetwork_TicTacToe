@@ -181,6 +181,35 @@ namespace Game
         }
     }
 
+    void TicTacToeLogic::correctOutputValues(int playerId, std::vector<double>& outputValues) const
+    {
+        assert(outputValues.size() == m_gameCells.size());
+
+        for (unsigned int k = 0; k < m_gameCells.size(); k++)
+        {
+            capValueAccordingToState(m_gameCells[k], outputValues[k]);
+        }
+    }
+
+    void TicTacToeLogic::capValueAccordingToState(const CellState& state, double& value)
+    {
+        switch (state)
+        {
+        case CS_EMPTY:
+            if (value < 1)
+            {
+                value = 1;
+            }
+            break;
+        default:
+            if (value > 0)
+            {
+                value = 0;
+            }
+            break;
+        }
+    }
+
     void TicTacToeLogic::getTripleCandidates(const std::vector<CellState>& gameCells, CellState targeState, std::vector<int>& candidates)
     {
         // check if we can complete a triple

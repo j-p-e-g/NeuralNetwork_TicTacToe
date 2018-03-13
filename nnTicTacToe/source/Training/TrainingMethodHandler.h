@@ -71,6 +71,9 @@ namespace Training
         double m_learningRateFactor = 0.5;
         double m_minLearningRate = 0.0001;
         double m_maxLearningRate = 10;
+        /// if true, the averaged adjustment values get divided by the largest entry
+        /// so their proportion stays the same, but large values don't throw the algorithm out of whack
+        bool m_normalizeAdjustmentValues = true;
 
         int m_countTrainingSets = 0;
         double m_prevError = INFINITY;

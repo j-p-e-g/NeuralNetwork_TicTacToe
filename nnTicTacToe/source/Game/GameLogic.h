@@ -22,6 +22,8 @@ namespace Game
         virtual bool applyMove(int playerId, int actionIndex) = 0;
         virtual void getNodeNetworkInputValues(std::vector<double>& inputValues) const = 0;
         virtual void getExpectedOutput(int playerId, std::vector<double>& expectedOutput) const = 0;
+        /// correct output values to be closer to what was expected
+        virtual void correctOutputValues(int playerId, std::vector<double>& outputValues) const = 0;
         virtual GameState evaluateBoard() const = 0;
 
     public:
@@ -51,10 +53,12 @@ namespace Game
         bool applyMove(int playerId, int actionIndex) override;
         void getNodeNetworkInputValues(std::vector<double>& inputValues) const override;
         void getExpectedOutput(int playerId, std::vector<double>& expectedOutput) const override;
+        void correctOutputValues(int playerId, std::vector<double>& outputValues) const override;
         GameState evaluateBoard() const override;
 
     public:
-        static void getTripleCandidates(const std::vector<CellState>& gameCells, CellState targeState, std::vector<int>& candidates);
+        static void capValueAccordingToState(const CellState& state, double& value);
+        static void getTripleCandidates(const std::vector<CellState>& gameCells, CellState targetState, std::vector<int>& candidates);
         static int getTripleCandidate(const std::vector<CellState>& gameCells, CellState targeState, int idx1, int idx2, int idx3);
 
         /// collect all possible permutations of values the game board can have at the last turn
